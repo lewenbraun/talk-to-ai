@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+      "baseUrl": ".",
+      "moduleResolution": "node",
+      "paths": {
+        "@/*": ["resources/js/*"],
+        "~/*": ["resources/js/*"],
+        "vue": ["node_modules/vue/dist/vue.esm-bundler.js"]
+      },
+    "lib": ["ESNext", "DOM", "DOM.Iterable", "ScriptHost"]
+    }
+  }

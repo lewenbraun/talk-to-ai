@@ -1,0 +1,67 @@
+services:
+  # Backend Application (Laravel)
+  tta-backend:
+    build:
+      context: .
+      dockerfile: .docker/php/Dockerfile
+    container_name: tta-backend
+    restart: unless-stopped
+    tty: true
+    environment:
+      - no_proxy=.tta-backend
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - .docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - tta-network
+    depends_on:
+      - tta-db
+
+  # Backend Nginx (serving Laravel)
+  tta-nginx-backend:
+    image: nginx:stable-alpine
+    container_name: tta-nginx-backend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - .:/var/www
+      - ./.docker/nginx:/etc/nginx/conf.d
+    networks:
+      - tta-network
+    depends_on:
+      - tta-backend
+
+  # Database
+  tta-db:
+    image: postgres:latest
+    container_name: tta-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - tta-db-data:/var/lib/postgresql/data
+    networks:
+      - tta-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  tta-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "172.31.0.0/24"
+          gateway: 172.31.0.1
+
+volumes:
+  tta-db-data:
+    driver: local
