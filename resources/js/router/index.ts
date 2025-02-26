@@ -10,7 +10,7 @@ const routes: RouteRecordRaw[] = [
   {
     name: 'main',
     path: '/',
-    component: () => import('@/pages/TestPage.vue'),
+    component: () => import('@/pages/Chat/Chat.vue'),
     meta: { requiresAuth: true },
   },
   {
