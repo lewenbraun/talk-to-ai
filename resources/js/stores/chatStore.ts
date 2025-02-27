@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia';
+import { defineStore } from "pinia";
 
 interface Message {
   id: number;
@@ -15,38 +15,76 @@ interface Contact {
   lastMessage: string;
 }
 
-export const useChatStore = defineStore('chatStore', {
+export const useChatStore = defineStore("chatStore", {
   state: () => ({
-    currentUser: 'Alice',
+    currentUser: "Alice",
     currentContact: null as Contact | null,
     contacts: [
-      { id: 1, name: 'Alice', avatar: 'https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato', lastMessage: 'Hoorayy!!' },
-      { id: 2, name: 'Martin', avatar: 'https://placehold.co/200x/ad922e/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato', lastMessage: 'That pizza place was amazing!' },
+      {
+        id: 1,
+        name: "Alice",
+        avatar:
+          "https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato",
+        lastMessage: "Hoorayy!!",
+      },
+      {
+        id: 2,
+        name: "Martin",
+        avatar:
+          "https://placehold.co/200x/ad922e/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato",
+        lastMessage: "That pizza place was amazing!",
+      },
     ] as Contact[],
-    messages: [
-      { id: 1, user: 'Alice', content: "Hey Bob, how's it going?", timestamp: new Date(), type: 'incoming' },
-      { id: 2, user: 'Alice', content: "Hi Alice! I'm good, just finished a great book. How about you?", timestamp: new Date(), type: 'outgoing' },
-    ] as Message[],
+    messagesByContact: {} as Record<number, Message[]>,
   }),
+  getters: {
+    currentMessages(state) {
+      if (!state.currentContact) return [];
+      return state.messagesByContact[state.currentContact.id] || [];
+    },
+  },
   actions: {
+    async setCurrentContact(contact: Contact) {
+      this.currentContact = contact;
+      if (!this.messagesByContact[contact.id]) {
+        await this.loadMessagesForContact(contact);
+      }
+    },
+    async loadMessagesForContact(contact: Contact) {
+      const dummyMessages: Message[] = [
+        {
+          id: 1,
+          user: contact.name,
+          content: "Hello",
+          timestamp: new Date(),
+          type: "incoming",
+        },
+        {
+          id: 2,
+          user: this.currentUser,
+          content: "Hi",
+          timestamp: new Date(),
+          type: "outgoing",
+        },
+      ];
+      this.messagesByContact[contact.id] = dummyMessages;
+    },
     sendMessage(content: string) {
-      const newMessage = {
+      if (!this.currentContact) return;
+      const newMsg = {
         id: Date.now(),
         user: this.currentUser,
         content,
         timestamp: new Date(),
-        type: 'outgoing'
+        type: "outgoing",
       };
-      this.messages.push(newMessage);
-    },
-    receiveMessage(message: Message) {
-      this.messages.push(message);
+      if (!this.messagesByContact[this.currentContact.id]) {
+        this.messagesByContact[this.currentContact.id] = [];
+      }
+      this.messagesByContact[this.currentContact.id].push(newMsg);
     },
     loadMoreMessages() {
-      console.log('Load more messages...');
+      console.log("Load more messages");
     },
-    setCurrentContact(contact: Contact) {
-      this.currentContact = contact;
-    }
-  }
+  },
 });

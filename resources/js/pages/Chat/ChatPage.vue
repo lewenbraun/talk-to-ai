@@ -6,6 +6,6 @@
 </template>
 
 <script setup lang="ts">
-import Sidebar from '@/components/Chat/Sidebar.vue'
-import ChatArea from '@/components/Chat/ChatArea.vue'
+import Sidebar from "@/components/Chat/Sidebar.vue";
+import ChatArea from "@/components/Chat/ChatArea.vue";
 </script>
