@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\Role;
 use App\Models\Chat;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
