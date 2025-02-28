@@ -35,37 +35,37 @@
       </div>
     </header>
     <div class="overflow-y-auto h-full p-3 mb-9 pb-20">
-      <div
-        v-for="contact in chatStore.contacts"
-        :key="contact.id"
-        @click="selectContact(contact)"
-        class="flex items-center mb-4 cursor-pointer hover:bg-gray-100 p-2 rounded-md"
-      >
-        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3">
-          <img
-            :src="contact.avatar"
-            alt="User Avatar"
-            class="w-12 h-12 rounded-full"
-          />
-        </div>
-        <div class="flex-1">
-          <h2 class="text-lg font-semibold">{{ contact.name }}</h2>
-          <p class="text-gray-600">{{ contact.lastMessage }}</p>
-        </div>
-      </div>
+      <ChatItem :chat="newChat" icon="plus" @click="createNewChat()" />
+      <hr class="my-2" />
+      <ChatItem
+        v-for="(chat, index) in chatStore.chats"
+        :chat="chat"
+        :key="index"
+        @click="selectChat(chat)"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { useChatStore } from "@/stores/chatStore";
+import { useChatStore, Chat } from "@/stores/chatStore";
+import ChatItem from "@/components/Chat/ChatItem.vue";
 import VueFeather from "vue-feather";
+
+const newChat = {
+  id: null,
+  name: "New Chat",
+};
 
 const chatStore = useChatStore();
 const menuOpen = ref(false);
 
-const selectContact = (contact: any) => {
-  chatStore.setCurrentContact(contact);
+const selectChat = (chat: Chat) => {
+  chatStore.setCurrentChat(chat);
+};
+
+const createNewChat = () => {
+  chatStore.createNewChat();
 };
 </script>

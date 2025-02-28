@@ -1,5 +1,5 @@
 <template>
-  <div :class="messageClass">
+  <div class="flex items-center" :class="messageClass">
     <div
       v-if="isIncoming"
       class="w-9 h-9 rounded-full flex items-center justify-center mr-2"
@@ -24,14 +24,7 @@
 
 <script setup lang="ts">
 import { computed, defineProps } from "vue";
-
-interface Message {
-  id: number;
-  user: string;
-  content: string;
-  timestamp: Date;
-  type: "incoming" | "outgoing";
-}
+import { Message } from "@/stores/chatStore";
 
 const props = defineProps<{ message: Message }>();
 const isIncoming = computed(() => props.message.type === "incoming");

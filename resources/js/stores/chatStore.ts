@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 
-interface Message {
+export interface Message {
   id: number;
   user: string;
   content: string;
@@ -8,53 +8,52 @@ interface Message {
   type: string;
 }
 
-interface Contact {
-  id: number;
+export interface Chat {
+  id?: number | null;
   name: string;
-  avatar: string;
-  lastMessage: string;
 }
 
 export const useChatStore = defineStore("chatStore", {
   state: () => ({
     currentUser: "Alice",
-    currentContact: null as Contact | null,
-    contacts: [
+    currentChat: null as Chat | null,
+    chats: [
       {
         id: 1,
-        name: "Alice",
-        avatar:
-          "https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato",
-        lastMessage: "Hoorayy!!",
+        name: "What is Lorem Ipsum?",
       },
       {
         id: 2,
-        name: "Martin",
-        avatar:
-          "https://placehold.co/200x/ad922e/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato",
-        lastMessage: "That pizza place was amazing!",
+        name: "Better keyboard in the world",
       },
-    ] as Contact[],
-    messagesByContact: {} as Record<number, Message[]>,
+    ] as Chat[],
+    messagesByChat: {} as Record<number, Message[]>,
   }),
   getters: {
     currentMessages(state) {
-      if (!state.currentContact) return [];
-      return state.messagesByContact[state.currentContact.id] || [];
+      if (!state.currentChat) return [];
+      return state.messagesByChat[state.currentChat.id ?? -1] || [];
     },
   },
   actions: {
-    async setCurrentContact(contact: Contact) {
-      this.currentContact = contact;
-      if (!this.messagesByContact[contact.id]) {
-        await this.loadMessagesForContact(contact);
+    async setCurrentChat(chat: Chat) {
+      this.currentChat = chat;
+      if (!this.messagesByChat[chat.id!]) {
+        await this.loadMessagesForChat(chat);
       }
     },
-    async loadMessagesForContact(contact: Contact) {
+    async createNewChat() {
+      const newChat = {
+        id: null,
+        name: "New chat",
+      };
+      await this.setCurrentChat(newChat);
+    },
+    async loadMessagesForChat(chat: Chat) {
       const dummyMessages: Message[] = [
         {
           id: 1,
-          user: contact.name,
+          user: chat.name,
           content: "Hello",
           timestamp: new Date(),
           type: "incoming",
@@ -67,10 +66,10 @@ export const useChatStore = defineStore("chatStore", {
           type: "outgoing",
         },
       ];
-      this.messagesByContact[contact.id] = dummyMessages;
+      this.messagesByChat[chat.id!] = dummyMessages;
     },
     sendMessage(content: string) {
-      if (!this.currentContact) return;
+      if (!this.currentChat) return;
       const newMsg = {
         id: Date.now(),
         user: this.currentUser,
@@ -78,10 +77,10 @@ export const useChatStore = defineStore("chatStore", {
         timestamp: new Date(),
         type: "outgoing",
       };
-      if (!this.messagesByContact[this.currentContact.id]) {
-        this.messagesByContact[this.currentContact.id] = [];
+      if (!this.messagesByChat[this.currentChat.id!]) {
+        this.messagesByChat[this.currentChat.id!] = [];
       }
-      this.messagesByContact[this.currentContact.id].push(newMsg);
+      this.messagesByChat[this.currentChat.id!].push(newMsg);
     },
     loadMoreMessages() {
       console.log("Load more messages");
