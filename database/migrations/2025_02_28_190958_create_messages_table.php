@@ -17,7 +17,7 @@ return new class () extends Migration {
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Chat::class);
-            $table->text('message');
+            $table->text('content');
             $table->enum('role', array_column(Role::cases(), 'value'));
             $table->timestamps();
         });

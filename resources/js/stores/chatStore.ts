@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { useUserStore } from "@/stores/userStore";
-import axios from "../plugins/axios";
+import { api } from "@/boot/axios";
 
 export interface Message {
   id?: number | null;
@@ -93,7 +93,7 @@ export const useChatStore = defineStore("chatStore", {
     },
     async sendMessageInNewChat(message: Message) {
       try {
-        const response = await axios.post("api/chat/new/send-message", {
+        const response = await api.post("api/chat/new/send-message", {
           content: message.content,
         });
         const data = response.data;
@@ -118,7 +118,7 @@ export const useChatStore = defineStore("chatStore", {
     },
     async sendMessageInExistingChat(message: Message) {
       try {
-        const response = await axios.post("api/chat/send-message", {
+        const response = await api.post("api/chat/send-message", {
           content: message.content,
         });
         const data = response.data;

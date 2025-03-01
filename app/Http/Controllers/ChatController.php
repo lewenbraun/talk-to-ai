@@ -20,40 +20,40 @@ class ChatController extends Controller
 
     public function userSendMessage(Request $request)
     {
-        $message = $request->input('message');
+        $content = $request->input('content');
         $chat_id = $request->input('chat_id');
 
         $chat = Chat::findOrFail('id', $chat_id);
 
-        $status = $this->chatService->sendMessage($message, Role::USER, $chat);
+        $status = $this->chatService->sendMessage($content, Role::USER, $chat);
 
         return $status;
     }
 
     public function sendMessageInNewChat(Request $request)
     {
-        $message = $request->input('message');
+        $content = $request->input('content');
 
         $chat = Chat::create([
             'user_id' => auth()->id(),
             'name' => '',
         ]);
 
-        $status = $this->chatService->sendMessage($message, Role::USER, $chat);
+        $status = $this->chatService->sendMessage($content, Role::USER, $chat);
 
         return $status;
     }
 
     public function sendMessageInExistingChat(Request $request)
     {
-        $message = $request->input('message');
+        $content = $request->input('content');
 
         $chat = Chat::create([
             'user_id' => auth()->id(),
             'name' => '',
         ]);
 
-        $status = $this->chatService->sendMessage($message, Role::USER, $chat);
+        $status = $this->chatService->sendMessage($content, Role::USER, $chat);
 
         return $status;
     }

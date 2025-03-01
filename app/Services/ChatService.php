@@ -7,22 +7,18 @@ namespace App\Services;
 use Exception;
 use App\Enums\Role;
 use App\Models\Chat;
+use App\Models\Message;
 
 class ChatService
 {
-    public function sendMessage(string $message, Role $role, Chat $chat): bool
+    public function sendMessage(string $content, Role $role, Chat $chat): Message
     {
-        try {
-            $message = $chat->messages->create([
-                'chat_id' => $chat->id,
-                'message' => $message,
-                'role' => $role,
-            ]);
+        $message = Message::create([
+            'chat_id' => $chat->id,
+            'content' => $content,
+            'role' => $role->value,
+        ]);
 
-        } catch (Exception $e) {
-            return false;
-        }
-
-        return true;
+        return $message;
     }
 }
