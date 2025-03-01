@@ -35,7 +35,7 @@
       </div>
     </header>
     <div class="overflow-y-auto h-full p-3 mb-9 pb-20">
-      <ChatItem :chat="newChat" icon="plus" @click="createNewChat()" />
+      <ChatItem :chat="newChat" icon="plus" @click="selectChat(newChat)" />
       <hr class="my-2" />
       <ChatItem
         v-for="(chat, index) in chatStore.chats"
@@ -63,9 +63,5 @@ const menuOpen = ref(false);
 
 const selectChat = (chat: Chat) => {
   chatStore.setCurrentChat(chat);
-};
-
-const createNewChat = () => {
-  chatStore.createNewChat();
 };
 </script>
