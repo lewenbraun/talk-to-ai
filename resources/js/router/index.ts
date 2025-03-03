@@ -1,12 +1,53 @@
 import { createRouter, RouteRecordRaw, createWebHistory } from "vue-router";
 import { useUserStore } from "../stores/userStore";
+import { Chat, useChatStore } from "../stores/chatStore";
 
 const routes: RouteRecordRaw[] = [
   {
     name: "main",
     path: "/",
     component: () => import("@/pages/Chat/ChatPage.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: false },
+    children: [
+      {
+        path: "/new-chat",
+        component: () => import("@/pages/Chat/ChatPage.vue"),
+        name: "new-chat",
+        beforeEnter: (to, from, next) => {
+          const chatStore = useChatStore();
+          chatStore.startNewChat();
+          next();
+        },
+      },
+      {
+        path: "/chat/:chat_id",
+        component: () => import("@/pages/Chat/ChatPage.vue"),
+        name: "chat",
+        beforeEnter: async (to, from, next) => {
+          const chatStore = useChatStore();
+          await chatStore.loadChatList();
+
+          const chatId = to.params.chat_id;
+
+          const chat = chatStore.chats.find(
+            (item) => String(item.id) === chatId
+          );
+
+          try {
+            if (chat) {
+              await chatStore.setCurrentChat(chat);
+              await chatStore.loadMessagesForChat(chat);
+              next();
+            } else {
+              next({ name: "new-chat" });
+            }
+          } catch (error) {
+            console.error("Error loading chat messages in route guard:", error);
+            next();
+          }
+        },
+      },
+    ],
   },
   {
     name: "regiser",
@@ -42,16 +83,19 @@ const router = createRouter({
   routes,
 });
 
-// router.beforeEach((to, from, next) => {
-//   const userStore = useUserStore();
-
-//   if (to.meta.requiresAuth && !userStore.user.token) {
-//     next({ name: 'login' });
-//   } else if (userStore.user.token && (to.name === 'login' || to.name === 'register')) {
-//     next({ name: 'main' });
-//   } else {
-//     next();
-//   }
-// });
+router.beforeEach(async (to, from, next) => {
+  const userStore = useUserStore();
+  if (!userStore.user.token) {
+    await userStore.createTemporaryUser();
+  }
+  if (
+    userStore.user.token &&
+    (to.name === "login" || to.name === "register" || to.name === "main")
+  ) {
+    next({ name: "new-chat" });
+  } else {
+    next();
+  }
+});
 
 export default router;

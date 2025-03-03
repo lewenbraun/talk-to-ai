@@ -9,6 +9,9 @@ use App\Http\Controllers\Auth\AuthController;
 Route::middleware('auth:sanctum')->prefix('chat')->group(function () {
     Route::post('/new/send-message', [ChatController::class, 'sendMessageInNewChat']);
     Route::post('/send-message', [ChatController::class, 'sendMessageInExistingChat']);
+
+    Route::get('/list', [ChatController::class, 'chatList']);
+    Route::get('/messages/{chat}', [ChatController::class, 'chatMessages']);
 });
 
 Route::post('/create-temporary-user', [AuthController::class, 'createTemporaryUser']);

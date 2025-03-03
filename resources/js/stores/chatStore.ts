@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { useUserStore } from "@/stores/userStore";
 import { api } from "@/boot/axios";
+import router from "@/router";
 
 export interface Message {
   id?: number | null;
@@ -10,69 +11,43 @@ export interface Message {
 }
 
 export interface Chat {
-  id?: number | null;
+  id: number;
   name: string;
 }
 
 export const useChatStore = defineStore("chatStore", {
   state: () => ({
     currentChat: null as Chat | null,
-    chats: [
-      {
-        id: 1,
-        name: "What is Lorem Ipsum?",
-      },
-      {
-        id: 2,
-        name: "Better keyboard in the world",
-      },
-    ] as Chat[],
+    chats: [] as Chat[],
     messagesByChat: {} as Record<number, Message[]>,
+    isNewChatMode: false,
   }),
   getters: {
-    currentMessages(state) {
+    currentMessages(state): Message[] {
       if (!state.currentChat) return [];
       return state.messagesByChat[state.currentChat.id ?? -1] || [];
     },
-    userName() {
+    userName(): string {
       const userStore = useUserStore();
-      return userStore.user.name;
+      return userStore.user.name || "Unknown User";
     },
   },
   actions: {
     async setCurrentChat(chat: Chat) {
       this.currentChat = chat;
-      if (chat && !this.messagesByChat[chat.id!]) {
+      console.log(this.currentChat);
+      this.isNewChatMode = false;
+      if (chat && !this.messagesByChat[chat.id]) {
         await this.loadMessagesForChat(chat);
       }
+      console.log(this.currentChat);
     },
-    async createNewChat() {
-      const newChat = {
-        id: null,
-        name: "New chat",
-      };
-      await this.setCurrentChat(newChat);
-    },
-    async loadMessagesForChat(chat: Chat) {
-      const dummyMessages: Message[] = [
-        {
-          id: 1,
-          content: "Hello",
-          timestamp: new Date(),
-          type: "incoming",
-        },
-        {
-          id: 2,
-          content: "Hi",
-          timestamp: new Date(),
-          type: "outgoing",
-        },
-      ];
-      this.messagesByChat[chat.id!] = dummyMessages;
+    startNewChat() {
+      this.currentChat = null;
+      this.isNewChatMode = true;
+      this.messagesByChat = {};
     },
     async sendMessage(content: string) {
-      if (!this.currentChat) return;
-
       const newMessage = {
         id: null,
         content,
@@ -80,57 +55,74 @@ export const useChatStore = defineStore("chatStore", {
         type: "outgoing",
       } as Message;
 
-      if (!this.messagesByChat[this.currentChat.id!]) {
-        this.messagesByChat[this.currentChat.id!] = [];
-      }
-      this.messagesByChat[this.currentChat.id!].push(newMessage);
-
-      if (this.currentChat.id === null) {
+      if (this.isNewChatMode) {
         await this.sendMessageInNewChat(newMessage);
       } else {
-        await this.sendMessageInExistingChat(newMessage);
+        if (this.currentChat) {
+          await this.sendMessageInExistingChat(newMessage, this.currentChat.id);
+        }
       }
     },
     async sendMessageInNewChat(message: Message) {
       try {
-        const response = await api.post("api/chat/new/send-message", {
+        const response = await api.post("/api/chat/new/send-message", {
           content: message.content,
         });
         const data = response.data;
 
-        let newChat = {
+        const newChat: Chat = {
           id: data.chat.id,
-          name: data.chat.name,
+          name: "New chat",
         };
+        this.messagesByChat[newChat.id] = [message];
 
+        this.chats.unshift(newChat);
+        console.log(this.currentChat);
+
+        message.id = data.message.id;
+
+        router.push({ name: "chat", params: { chat_id: newChat.id } });
         this.setCurrentChat(newChat);
 
-        if (this.currentChat) {
-          var addedMessage = this.messagesByChat[this.currentChat.id!].find(
-            (item) => item === message
-          );
-        }
-        if (addedMessage) addedMessage.id = data.message.id;
+        this.isNewChatMode = false;
       } catch (error) {
-        console.error("Error sending message:", error);
-        return null;
+        console.error("Error sending message in new chat:", error);
+        throw error;
       }
     },
-    async sendMessageInExistingChat(message: Message) {
+    async sendMessageInExistingChat(message: Message, chat_id: number) {
       try {
-        const response = await api.post("api/chat/send-message", {
+        this.messagesByChat[chat_id].push(message);
+
+        const response = await api.post("/api/chat/send-message", {
+          chat_id: chat_id,
           content: message.content,
         });
         const data = response.data;
 
-        if (this.currentChat) {
-          var addedMessage = this.messagesByChat[this.currentChat.id!].find(
-            (item) => item === message
-          );
-        }
+        let addedMessage = this.messagesByChat[chat_id]?.find(
+          (item) => item === message
+        );
         if (addedMessage) addedMessage.id = data.message.id;
       } catch (error) {
-        console.error("Error sending message:", error);
+        console.error("Error sending message in existing chat:", error);
+        throw error;
+      }
+    },
+    async loadChatList() {
+      try {
+        let chatsResponse = await api.get("/api/chat/list");
+        this.chats = chatsResponse.data as Chat[];
+      } catch (error) {
+        console.error("Error loading chat list:", error);
+      }
+    },
+    async loadMessagesForChat(chat: Chat) {
+      try {
+        let messagesResponse = await api.get(`/api/chat/messages/${chat.id}`);
+        this.messagesByChat[chat.id] = messagesResponse.data;
+      } catch (error) {
+        console.error(`Error loading messages for chat ${chat.id}:`, error);
       }
     },
     loadMoreMessages() {

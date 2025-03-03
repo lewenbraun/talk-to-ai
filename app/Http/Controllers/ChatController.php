@@ -6,8 +6,11 @@ namespace App\Http\Controllers;
 
 use App\Enums\Role;
 use App\Models\Chat;
+use App\Models\Message;
 use Illuminate\Http\Request;
 use App\Services\ChatService;
+use App\Http\Resources\ChatResource;
+use App\Http\Resources\MessageResource;
 
 class ChatController extends Controller
 {
@@ -18,16 +21,24 @@ class ChatController extends Controller
         $this->chatService = $chatService;
     }
 
-    public function userSendMessage(Request $request)
+    public function chatList()
     {
-        $content = $request->input('content');
-        $chat_id = $request->input('chat_id');
+        $chats = Chat::where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc')
+            ->take(20)
+            ->get();
 
-        $chat = Chat::findOrFail('id', $chat_id);
+        return $chats;
+    }
 
-        $status = $this->chatService->sendMessage($content, Role::USER, $chat);
+    public function chatMessages(Chat $chat)
+    {
+        $messages = Message::where('chat_id', $chat->id)
+            ->orderBy('created_at', 'asc')
+            ->take(20)
+            ->get();
 
-        return $status;
+        return $messages;
     }
 
     public function sendMessageInNewChat(Request $request)
@@ -36,25 +47,27 @@ class ChatController extends Controller
 
         $chat = Chat::create([
             'user_id' => auth()->id(),
-            'name' => '',
+            'name' => 'New chat',
         ]);
 
-        $status = $this->chatService->sendMessage($content, Role::USER, $chat);
+        $message = $this->chatService->sendMessage($content, Role::USER, $chat);
 
-        return $status;
+        return [
+            'chat' => new ChatResource($chat),
+            'message' => new MessageResource($message)
+        ];
     }
 
     public function sendMessageInExistingChat(Request $request)
     {
         $content = $request->input('content');
 
-        $chat = Chat::create([
-            'user_id' => auth()->id(),
-            'name' => '',
-        ]);
+        $chat = Chat::findOrFail($request->chat_id);
 
-        $status = $this->chatService->sendMessage($content, Role::USER, $chat);
+        $message = $this->chatService->sendMessage($content, Role::USER, $chat);
 
-        return $status;
+        return [
+            'message' => new MessageResource($message)
+        ];
     }
 }
