@@ -9,7 +9,7 @@
           @click="menuOpen = !menuOpen"
           class="focus:outline-none cursor-pointer flex self-center"
         >
-          <vue-feather type="settings"></vue-feather>
+          <vue-feather type="settings" />
         </button>
         <div
           v-if="menuOpen"
@@ -35,7 +35,7 @@
       </div>
     </header>
     <div class="overflow-y-auto h-full p-3 mb-9 pb-20">
-      <ChatItem :chat="newChat" icon="plus" @click="createNewChat()" />
+      <ChatNewItem icon="plus" @click="startNewChat()" />
       <hr class="my-2" />
       <ChatItem
         v-for="(chat, index) in chatStore.chats"
@@ -48,24 +48,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import { useChatStore, Chat } from "@/stores/chatStore";
 import ChatItem from "@/components/Chat/ChatItem.vue";
 import VueFeather from "vue-feather";
+import ChatNewItem from "./ChatNewItem.vue";
 
-const newChat = {
-  id: null,
-  name: "New Chat",
-};
-
+const router = useRouter();
 const chatStore = useChatStore();
+
 const menuOpen = ref(false);
 
 const selectChat = (chat: Chat) => {
+  router.push({ name: "chat", params: { chat_id: chat.id } });
   chatStore.setCurrentChat(chat);
 };
 
-const createNewChat = () => {
-  chatStore.createNewChat();
+const startNewChat = () => {
+  router.push({ name: "new-chat" });
+  chatStore.startNewChat();
 };
 </script>

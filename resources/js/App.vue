@@ -3,9 +3,10 @@
 </template>
 
 <script setup lang="ts">
+import { defineOptions } from "vue";
 defineOptions({
-  name: 'App',
-})
+  name: "App",
+});
 </script>
 
 <style></style>
