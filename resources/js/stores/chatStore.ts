@@ -35,12 +35,10 @@ export const useChatStore = defineStore("chatStore", {
   actions: {
     async setCurrentChat(chat: Chat) {
       this.currentChat = chat;
-      console.log(this.currentChat);
       this.isNewChatMode = false;
       if (chat && !this.messagesByChat[chat.id]) {
         await this.loadMessagesForChat(chat);
       }
-      console.log(this.currentChat);
     },
     startNewChat() {
       this.currentChat = null;
