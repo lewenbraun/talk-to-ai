@@ -10,6 +10,7 @@ use App\Models\Message;
 use App\Services\LLMService;
 use Illuminate\Http\Request;
 use App\Services\ChatService;
+use App\Jobs\GenerateLLMAnswer;
 use App\Http\Resources\ChatResource;
 use App\Http\Resources\MessageResource;
 
@@ -44,21 +45,15 @@ class ChatController extends Controller
         return $messages;
     }
 
-    public function sendMessageInNewChat(Request $request)
+    public function createChat()
     {
-        $content = $request->input('content');
-
         $chat = Chat::create([
             'user_id' => auth()->id(),
             'name' => 'New chat',
         ]);
 
-        $message = $this->chatService->sendMessage($content, Role::USER, $chat);
-        $answer = $this->llmService->generateAnswer($chat->id, $message);
-
         return [
             'chat' => new ChatResource($chat),
-            'message' => new MessageResource($message)
         ];
     }
 
@@ -70,7 +65,8 @@ class ChatController extends Controller
 
         $message = $this->chatService->sendMessage($content, Role::USER, $chat);
 
-        $answer = $this->llmService->generateAnswer($chat->id, $message);
+        GenerateLLMAnswer::dispatch($chat->id, $message);
+
         return [
             'message' => new MessageResource($message)
         ];

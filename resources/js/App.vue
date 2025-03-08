@@ -2,11 +2,6 @@
   <router-view />
 </template>
 
-<script setup lang="ts">
-import { defineOptions } from "vue";
-defineOptions({
-  name: "App",
-});
-</script>
+<script setup></script>
 
 <style></style>

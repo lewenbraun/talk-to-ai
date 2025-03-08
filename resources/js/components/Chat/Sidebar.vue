@@ -3,7 +3,7 @@
     <header
       class="p-4 border-b border-gray-300 flex justify-between items-center bg-indigo-600 text-white"
     >
-      <h1 class="text-2xl font-semibold">Chat Web</h1>
+      <h1 class="text-2xl font-semibold">Ai chat</h1>
       <div class="relative">
         <button
           @click="menuOpen = !menuOpen"
@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useChatStore, Chat } from "@/stores/chatStore";
 import ChatItem from "@/components/Chat/ChatItem.vue";
