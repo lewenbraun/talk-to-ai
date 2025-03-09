@@ -2,7 +2,7 @@
   <div class="flex items-center" :class="messageClass">
     <div
       v-if="isIncoming"
-      class="w-9 h-9 rounded-full flex items-center justify-center mr-2"
+      class="w-9 h-9 rounded-full items-center justify-center mr-2"
     >
       <img
         :src="incomingAvatar"
@@ -10,8 +10,15 @@
         class="w-8 h-8 rounded-full"
       />
     </div>
-    <div class="flex max-w-96 p-3 rounded-lg" :class="bubbleClass">
-      <p>{{ message.content }}</p>
+    <VueFeather
+      v-if="message.content === ''"
+      type="loader"
+      animation="spin"
+      animation-speed="Normal"
+    />
+
+    <div v-else class="flex max-w-258 p-3 rounded-lg" :class="bubbleClass">
+      <vue-markdown :source="message.content" />
     </div>
     <div
       v-if="!isIncoming"
@@ -25,6 +32,8 @@
 <script setup lang="ts">
 import { computed, defineProps } from "vue";
 import { Message } from "@/stores/chatStore";
+import VueFeather from "vue-feather";
+import VueMarkdown from "vue-markdown-render";
 
 const props = defineProps<{ message: Message }>();
 const isIncoming = computed(() => props.message.type === "incoming");

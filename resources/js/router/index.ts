@@ -13,8 +13,9 @@ const routes: RouteRecordRaw[] = [
         path: "/new-chat",
         component: () => import("@/pages/Chat/ChatPage.vue"),
         name: "new-chat",
-        beforeEnter: (to, from, next) => {
+        beforeEnter: async (to, from, next) => {
           const chatStore = useChatStore();
+          await chatStore.loadChatList();
           chatStore.startNewChat();
           next();
         },
@@ -36,7 +37,6 @@ const routes: RouteRecordRaw[] = [
           try {
             if (chat) {
               await chatStore.setCurrentChat(chat);
-              await chatStore.loadMessagesForChat(chat);
               next();
             } else {
               next({ name: "new-chat" });
