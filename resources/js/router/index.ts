@@ -1,6 +1,7 @@
 import { createRouter, RouteRecordRaw, createWebHistory } from "vue-router";
 import { useUserStore } from "../stores/userStore";
 import { Chat, useChatStore } from "../stores/chatStore";
+import { useAiServiceStore } from "@/stores/aiServiceStore";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -31,7 +32,7 @@ const routes: RouteRecordRaw[] = [
           const chatId = to.params.chat_id;
 
           const chat = chatStore.chats.find(
-            (item) => String(item.id) === chatId
+            (item) => String(item.id) === chatId,
           );
 
           try {
@@ -48,6 +49,12 @@ const routes: RouteRecordRaw[] = [
         },
       },
     ],
+    beforeEnter: async (to, from, next) => {
+      const aiServiceStore = useAiServiceStore();
+      await aiServiceStore.loadAiServiceList();
+
+      next();
+    },
   },
   {
     name: "regiser",

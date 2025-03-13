@@ -3,8 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\AiService;
-use App\Models\LLM;
-use App\Models\User;
+use App\Enums\AiServiceEnum;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -15,13 +14,18 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::create('user_setting_ai_services', function (Blueprint $table) {
+        Schema::create('ai_services', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(User::class);
-            $table->foreignIdFor(AiService::class);
-            $table->string('api_key');
+            $table->string('name');
+            $table->string('url_api')->nullable();
             $table->timestamps();
         });
+
+        AiService::insert([
+            'id' => 1,
+            'name' => AiServiceEnum::OLLAMA->value,
+            'url_api' => 'http://localhost:11434',
+        ]);
     }
 
     /**
@@ -29,6 +33,6 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_setting_ai_services');
+        Schema::dropIfExists('ai_services');
     }
 };
