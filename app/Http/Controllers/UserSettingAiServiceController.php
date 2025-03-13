@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\AiService\AddApiKeyUserSettingAiServiceRequest;
 use App\Models\UserSettingAiService;
 use Illuminate\Http\JsonResponse;
 
 class UserSettingAiServiceController extends Controller
 {
-    public function addApiKey(Request $request): JsonResponse
+    public function addApiKey(AddApiKeyUserSettingAiServiceRequest $request): JsonResponse
     {
         UserSettingAiService::createOrUpdate(
             [
-                'user_id' => user()->id(),
+                'user_id' => auth()->id(),
                 'ai_service_id' => $request->input('ai_service_id'),
             ],
             [

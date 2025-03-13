@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\RoleEnum;
-use App\Models\Chat;
-use App\Models\Message;
-use Illuminate\Http\Request;
-use App\Services\ChatService;
-use App\Jobs\GenerateLLMAnswer;
+use App\Http\Requests\LLM\SendMessageInExistingChatRequest;
 use App\Http\Resources\ChatResource;
 use App\Http\Resources\MessageResource;
+use App\Jobs\GenerateLLMAnswer;
+use App\Models\Chat;
+use App\Models\Message;
+use App\Services\ChatService;
 use Illuminate\Http\JsonResponse;
 
 class ChatController extends Controller
@@ -55,7 +55,7 @@ class ChatController extends Controller
         ];
     }
 
-    public function sendMessageInExistingChat(Request $request): array
+    public function sendMessageInExistingChat(SendMessageInExistingChatRequest $request): array
     {
         $content = $request->input('content');
 

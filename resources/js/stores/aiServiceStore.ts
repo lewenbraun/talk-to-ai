@@ -75,11 +75,11 @@ export const useAiServiceStore = defineStore("aiServiceStore", {
         await this.loadAiServiceList();
       }
     },
-    async updateAiServiceUrl(service_id: number, new_url: string) {
-      const service = this.aiServices.find((s) => s.id === service_id);
+    async updateAiServiceUrl(ai_service_id: number, new_url: string) {
+      const service = this.aiServices.find((s) => s.id === ai_service_id);
       if (service) {
         let response = await api.post(`/api/ai-service/update`, {
-          service_id: service_id,
+          ai_service_id: ai_service_id,
           url_api: new_url,
         });
         if (response.status === 200) {

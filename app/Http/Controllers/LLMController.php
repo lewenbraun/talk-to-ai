@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LLM\AddLLMRequest;
+use App\Http\Requests\LLM\DeleteLLMRequest;
 use App\Models\AiService;
 use App\Models\LLM;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use App\Services\AiManagerService;
+use Illuminate\Http\JsonResponse;
 
 class LLMController extends Controller
 {
@@ -19,15 +20,14 @@ class LLMController extends Controller
         $this->aiManagerService = $aiManagerService;
     }
 
-    public function listByAiService(int $ai_service_id): JsonResponse
+    public function listByAiService(AiService $aiService): JsonResponse
     {
-        $aiService = AiService::findOrFail($ai_service_id);
         $llms = $this->aiManagerService->redirectListLLM($aiService);
 
         return response()->json($llms);
     }
 
-    public function add(Request $request): JsonResponse
+    public function add(AddLLMRequest $request): JsonResponse
     {
         $aiService = AiService::findOrFail($request->input('ai_service_id'));
         $llmName = $request->input('llm_name');
@@ -36,7 +36,7 @@ class LLMController extends Controller
         return response()->json($addedLLM);
     }
 
-    public function delete(Request $request): JsonResponse
+    public function delete(DeleteLLMRequest $request): JsonResponse
     {
         $llm = LLM::findOrFail($request->input('llm_id'));
         $aiService = AiService::findOrFail($request->input('ai_service_id'));

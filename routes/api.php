@@ -28,7 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->prefix('ai-service')->group(function () {
     Route::get('/list', [AiServiceController::class, 'list']);
     Route::post('/update', [AiServiceController::class, 'update']);
-    Route::get('/llm/list/{aiServiceId}', [LLMController::class, 'listByAiService']);
+    Route::get('/llm/list/{aiService}', [LLMController::class, 'listByAiService']);
     Route::post('/llm/add', [LLMController::class, 'add']);
     Route::post('/llm/update', [LLMController::class, 'update']);
     Route::post('/llm/delete', [LLMController::class, 'delete']);

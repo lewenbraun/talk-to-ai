@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AiService\UpdateAiServiceRequest;
 use App\Models\AiService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Services\AiManagerService;
 
@@ -27,9 +27,9 @@ class AiServiceController extends Controller
         return response()->json($aiServiceList);
     }
 
-    public function update(Request $request): JsonResponse
+    public function update(UpdateAiServiceRequest $request): JsonResponse
     {
-        $aiService = AiService::find($request->input('service_id'));
+        $aiService = AiService::find($request->input('ai_service_id'));
 
         $aiService->update([
             'url_api' => $request->input('url_api'),
