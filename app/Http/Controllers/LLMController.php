@@ -45,16 +45,4 @@ class LLMController extends Controller
 
         return response()->json();
     }
-
-    public function update(Request $request): JsonResponse
-    {
-        $llm = LLM::find($request->input('id'));
-
-        $llm = LLM::update([
-            'name' => $request->input('name'),
-            'url_name' => $request->input('url_name'),
-        ]);
-
-        return response()->json($llm);
-    }
 }

@@ -74,6 +74,7 @@ class OllamaService implements AiServiceContract
     public function addLLM(int $aiServiceId, string $llmName): LLM
     {
         $addedModel = LLM::create([
+            'user_id' => auth()->id(),
             'ai_service_id' => $aiServiceId,
             'name' => $llmName,
             'isLoaded' => false,
@@ -110,16 +111,25 @@ class OllamaService implements AiServiceContract
     {
         $this->updateListLLM();
 
-        $listLLM = LLM::where('ai_service_id', $aiService->id)->get();
+        $listLLM = LLM::where('user_id', auth()->id())
+            ->where('ai_service_id', $aiService->id)
+            ->get();
 
         return $listLLM;
     }
 
     public function updateListLLM(): void
     {
-        $ollamaIdInDb = AiService::where('name', AiServiceEnum::OLLAMA->value)->first()->id;
-        $ollamaModelNames = collect($this->client->models()->list()->models)->pluck('name')->toArray();
-        $dbModelNames = LLM::where('ai_service_id', $ollamaIdInDb)->pluck('name')->toArray();
+        $ollamaIdInDb = AiService::where('name', AiServiceEnum::OLLAMA->value)
+            ->first()
+            ->id;
+        $dbModelNames = LLM::where('user_id', auth()->id())
+            ->where('ai_service_id', $ollamaIdInDb)
+            ->pluck('name')
+            ->toArray();
+        $ollamaModelNames = collect($this->client->models()->list()->models)
+            ->pluck('name')
+            ->toArray();
 
         $diff = $this->getModelDiff($ollamaModelNames, $dbModelNames);
 
@@ -146,6 +156,7 @@ class OllamaService implements AiServiceContract
         $modelsToUpdateIsLoaded = [];
 
         $dbLlmModels = LLM::with('aiService')
+            ->where('user_id', auth()->id())
             ->where('ai_service_id', AiService::where('name', AiServiceEnum::OLLAMA->value)->first()->id)
             ->get();
 
@@ -165,6 +176,7 @@ class OllamaService implements AiServiceContract
     {
         foreach ($newModels as $newModelName) {
             LLM::create([
+                'user_id' => auth()->id(),
                 'ai_service_id' => $ollamaIdInDb,
                 'name' => $newModelName,
                 'isLoaded' => true,
