@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\RoleEnum;
-use App\Http\Requests\LLM\SendMessageInExistingChatRequest;
-use App\Http\Resources\ChatResource;
-use App\Http\Resources\MessageResource;
-use App\Jobs\GenerateLLMAnswer;
 use App\Models\Chat;
+use App\Enums\RoleEnum;
 use App\Models\Message;
 use App\Services\ChatService;
+use App\Jobs\GenerateLLMAnswer;
 use Illuminate\Http\JsonResponse;
+use App\Http\Resources\ChatResource;
+use App\Http\Resources\MessageResource;
+use App\Http\Requests\Chat\CreateChatRequest;
+use App\Http\Requests\Chat\SendMessageInExistingChatRequest;
 
 class ChatController extends Controller
 {
@@ -26,6 +27,7 @@ class ChatController extends Controller
     public function list(): JsonResponse
     {
         $chats = Chat::where('user_id', auth()->id())
+            ->with('llm')
             ->orderBy('created_at', 'desc')
             ->take(20)
             ->get();
@@ -43,10 +45,11 @@ class ChatController extends Controller
         return response()->json($messages);
     }
 
-    public function createChat(): array
+    public function createChat(CreateChatRequest $request): array
     {
         $chat = Chat::create([
             'user_id' => auth()->id(),
+            'llm_id' => $request->input('llm_id'),
             'name' => 'New chat',
         ]);
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\LLM;
+use App\Models\Chat;
 use App\Models\Message;
 use App\Models\AiService;
 use App\Enums\AiServiceEnum;
@@ -14,8 +15,8 @@ use App\Services\MessageService;
 use App\Events\LLMChunkGenerated;
 use App\Events\LLMAnswerGenerated;
 use App\Respositories\MessageRepository;
-use App\Services\Contracts\AiServiceContract;
 use Illuminate\Database\Eloquent\Collection;
+use App\Services\Contracts\AiServiceContract;
 
 class OllamaService implements AiServiceContract
 {
@@ -26,23 +27,20 @@ class OllamaService implements AiServiceContract
         $this->client = Ollama::client();
     }
 
-    public function generateAnswer(int $chat_id): void
+    public function generateAnswer(Chat $chat): void
     {
-        $formattedMessages = $this->prepareMessagesForLLM($chat_id);
-        $fullMessage = $this->processLLMStream($chat_id, $formattedMessages);
-        $this->saveLLMAnswer($chat_id, $fullMessage);
+        $messages = MessageRepository::messagesByChat($chat->id, 20);
+        $formattedMessages = MessageService::formatMessageForChat($messages);
+
+
+        $fullMessage = $this->processLLMStream($chat, $formattedMessages);
+        $this->saveLLMAnswer($chat->id, $fullMessage);
     }
 
-    private function prepareMessagesForLLM(int $chat_id): array
-    {
-        $messages = MessageRepository::messagesByChat($chat_id, 20);
-        return MessageService::formatMessageForChat($messages);
-    }
-
-    private function processLLMStream(int $chat_id, array $formattedMessages): string
+    private function processLLMStream(Chat $chat, array $formattedMessages): string
     {
         $chatStream = $this->client->chatCompletion()->create([
-            'model' => 'deepseek-r1:1.5b',
+            'model' => $chat->llm->name,
             'messages' => $formattedMessages,
             'stream' => true,
         ]);
@@ -52,7 +50,7 @@ class OllamaService implements AiServiceContract
         foreach ($chatStream as $chunk) {
             $contentChunk = $chunk->message->content ?? '';
             if (!empty($contentChunk)) {
-                broadcast(new LLMChunkGenerated($chat_id, $contentChunk));
+                broadcast(new LLMChunkGenerated($chat->id, $contentChunk));
                 $fullMessage .= $contentChunk;
             }
         }
@@ -123,10 +121,12 @@ class OllamaService implements AiServiceContract
         $ollamaIdInDb = AiService::where('name', AiServiceEnum::OLLAMA->value)
             ->first()
             ->id;
+
         $dbModelNames = LLM::where('user_id', auth()->id())
             ->where('ai_service_id', $ollamaIdInDb)
             ->pluck('name')
             ->toArray();
+
         $ollamaModelNames = collect($this->client->models()->list()->models)
             ->pluck('name')
             ->toArray();

@@ -25,4 +25,9 @@ class Chat extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function llm(): BelongsTo
+    {
+        return $this->belongsTo(LLM::class);
+    }
 }

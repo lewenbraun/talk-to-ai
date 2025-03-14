@@ -18,7 +18,7 @@ export interface AiService {
 export const useAiServiceStore = defineStore("aiServiceStore", {
   state: () => ({
     aiServices: [] as AiService[],
-    currentLlm: null as LLM | null,
+    currentLLM: null as LLM | null,
   }),
   actions: {
     async loadAiServiceList() {

@@ -21,14 +21,28 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useChatStore } from "@/stores/chatStore";
+import { useAiServiceStore } from "@/stores/aiServiceStore";
+import { toast } from "vue3-toastify";
 
 const newMessage = ref("");
 const chatStore = useChatStore();
+const aiServiceStore = useAiServiceStore();
 
 const send = () => {
-  if (newMessage.value.trim() !== "") {
-    chatStore.sendMessage(newMessage.value.trim());
-    newMessage.value = "";
+  if (chatStore.isNewChatMode && aiServiceStore.currentLLM) {
+    if (newMessage.value.trim() !== "") {
+      chatStore.sendMessage(newMessage.value.trim(), aiServiceStore.currentLLM);
+      newMessage.value = "";
+    }
+  } else {
+    toast("First choose llm", {
+      theme: "colored",
+      type: "error",
+      position: "top-left",
+      autoClose: 1500,
+      pauseOnHover: false,
+      hideProgressBar: true,
+    });
   }
 };
 </script>

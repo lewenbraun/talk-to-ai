@@ -24,7 +24,7 @@ class AiManagerService
         $aiService = $chat->llm->aiService;
 
         match ($aiService->name) {
-            AiServiceEnum::OLLAMA->value => $this->ollamaService->generateAnswer($chat->id),
+            AiServiceEnum::OLLAMA->value => $this->ollamaService->generateAnswer($chat),
         };
     }
 

@@ -1,8 +1,8 @@
 import { defineStore } from "pinia";
 import { useUserStore } from "@/stores/userStore";
 import { api } from "@/boot/axios";
-import { useRoute } from "vue-router";
 import router from "@/router";
+import { LLM } from "@/stores/aiServiceStore";
 
 export interface Message {
   id?: number | null;
@@ -16,6 +16,7 @@ export interface Message {
 export interface Chat {
   id: number;
   name: string;
+  llm: LLM;
   created_at: string;
 }
 
@@ -57,7 +58,7 @@ export const useChatStore = defineStore("chatStore", {
       this.messagesByChat = {};
       this.unsubscribeFromChannel();
     },
-    async sendMessage(content: string) {
+    async sendMessage(content: string, llm: LLM) {
       const newMessage = {
         id: null,
         content,
@@ -66,14 +67,14 @@ export const useChatStore = defineStore("chatStore", {
       } as Message;
 
       if (this.isNewChatMode) {
-        await this.sendMessageInNewChat(newMessage);
+        await this.sendMessageInNewChat(newMessage, llm);
       } else {
         if (this.currentChat) {
           await this.sendMessageInExistingChat(newMessage, this.currentChat.id);
         }
       }
     },
-    async sendMessageInNewChat(message: Message) {
+    async sendMessageInNewChat(message: Message, llm: LLM) {
       this.isGeneratingAnswer = true;
       this.currentAssistantMessage = {
         id: null,
@@ -83,12 +84,15 @@ export const useChatStore = defineStore("chatStore", {
       } as Message;
 
       try {
-        const newChatResoponse = await api.post("/api/chat/create");
+        const newChatResoponse = await api.post("/api/chat/create", {
+          llm_id: llm.id,
+        });
 
         const data = newChatResoponse.data;
 
         const newChat: Chat = {
           id: data.chat.id,
+          llm: llm,
           name: "New chat",
           created_at: data.chat.created_at,
         };
