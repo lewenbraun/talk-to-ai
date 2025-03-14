@@ -28,7 +28,7 @@
           <FormAddLLM
             :aiServiceId="props.aiService.id"
             :openFormAddLLM="openFormAddLLM"
-            @closeFormAddLLM="openFormAddLLM = false"
+            @update:openFormAddLLM="(value) => (openFormAddLLM = value)"
           />
         </div>
       </div>

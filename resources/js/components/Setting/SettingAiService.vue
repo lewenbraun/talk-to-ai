@@ -32,8 +32,8 @@
                       </h3>
                       <hr class="my-4 border-gray-300" />
                     </div>
-                    <div class="row-start-2 h-full ">
-                      <div class="flex h-full flex-row ">
+                    <div class="row-start-2 h-full">
+                      <div class="flex h-full flex-row">
                         <div class="flex flex-col items-start gap-2 w-full">
                           <button
                             class="block w-full cursor-pointer rounded-lg pl-2 text-left"

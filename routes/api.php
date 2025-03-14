@@ -11,7 +11,7 @@ use App\Http\Controllers\UserSettingAiServiceController;
 
 Route::middleware('auth:sanctum')->prefix('chat')->group(function () {
     Route::post('/create', [ChatController::class, 'createChat']);
-    Route::post('/send-message', [ChatController::class, 'sendMessageInExistingChat']);
+    Route::post('/send-message', [ChatController::class, 'sendMessage']);
 
     Route::get('/list', [ChatController::class, 'list']);
     Route::get('/messages/{chat}', [ChatController::class, 'chatMessages']);

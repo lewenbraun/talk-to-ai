@@ -36,11 +36,11 @@ const aiServiceStore = useAiServiceStore();
 const nameModel = ref("");
 
 const emit = defineEmits<{
-  (emit: "closeFormAddLLM"): void;
+  (e: "update:openFormAddLLM", value: boolean): void;
 }>();
 
 const addLLM = async () => {
-  emit("closeFormAddLLM");
+  emit("update:openFormAddLLM", false);
 
   let addedLLM = await aiServiceStore.addLLM(
     props.aiServiceId,
