@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="dropdownRef"
     v-if="openListLLMs"
     class="absolute left-0 top-full mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg"
   >
@@ -24,15 +25,13 @@
 </template>
 
 <script lang="ts" setup>
+import { ref, onMounted, onUnmounted } from "vue";
 import { AiService, useAiServiceStore } from "@/stores/aiServiceStore";
-import { defineProps } from "vue";
+import { defineProps, defineEmits } from "vue";
 
 const aiServiceStore = useAiServiceStore();
 
-const selectLLM = (llm: any) => {
-  aiServiceStore.currentLLM = llm;
-  emit("update:openListLLMs", false);
-};
+const dropdownRef = ref<HTMLElement | null>(null);
 
 const emit = defineEmits<{
   (e: "update:openListLLMs", value: boolean): void;
@@ -42,4 +41,23 @@ defineProps<{
   openListLLMs: boolean;
   aiServices: AiService[];
 }>();
+
+const selectLLM = (llm: any) => {
+  aiServiceStore.currentLLM = llm;
+  emit("update:openListLLMs", false);
+};
+
+const handleClickOutside = (event: MouseEvent) => {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
+    emit("update:openListLLMs", false);
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleClickOutside);
+});
 </script>

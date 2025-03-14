@@ -8,7 +8,7 @@
         <p
           v-if="isNewChatMode"
           class="text-gray-600 cursor-pointer max-w-20"
-          @click="openListLLMs = !openListLLMs"
+          @click.stop="openListLLMs = !openListLLMs"
         >
           Change llm
         </p>
