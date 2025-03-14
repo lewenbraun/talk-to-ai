@@ -11,7 +11,6 @@
         >
           <VueFeather type="settings" />
         </button>
-        <AiServiceList :openListLLMs="openListLLMs" />
       </div>
     </header>
     <div class="overflow-y-auto h-full p-3 mb-9 pb-20">
@@ -35,7 +34,6 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useChatStore, Chat } from "@/stores/chatStore";
-import AiServiceList from "@/components/Chat/AiServiceList.vue";
 import ChatItem from "@/components/Chat/ChatItem.vue";
 import ChatNewItem from "@/components/Chat/ChatNewItem.vue";
 import SettingAiService from "@/components/Setting/SettingAiService.vue";
@@ -44,7 +42,6 @@ import VueFeather from "vue-feather";
 const router = useRouter();
 const chatStore = useChatStore();
 
-const openListLLMs = ref(false);
 const openSetting = ref(false);
 
 const selectChat = (chat: Chat) => {
