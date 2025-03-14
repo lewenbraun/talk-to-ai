@@ -58,7 +58,7 @@ class ChatController extends Controller
         ];
     }
 
-    public function sendMessageInExistingChat(SendMessageInExistingChatRequest $request): array
+    public function sendMessage(SendMessageInExistingChatRequest $request): array
     {
         $content = $request->input('content');
 

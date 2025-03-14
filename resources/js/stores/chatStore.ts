@@ -1,8 +1,7 @@
 import { defineStore } from "pinia";
-import { useUserStore } from "@/stores/userStore";
 import { api } from "@/boot/axios";
+import { LLM, useAiServiceStore } from "@/stores/aiServiceStore";
 import router from "@/router";
-import { LLM } from "@/stores/aiServiceStore";
 
 export interface Message {
   id?: number | null;
@@ -34,19 +33,15 @@ export const useChatStore = defineStore("chatStore", {
       if (!state.currentChat) return [];
       return state.messagesByChat[state.currentChat.id ?? -1] || [];
     },
-    userName(): string {
-      const userStore = useUserStore();
-      return userStore.user.name || "Unknown User";
-    },
-    userId(): number | null {
-      const userStore = useUserStore();
-      return userStore.user.id;
+    aiServiceStore() {
+      return useAiServiceStore();
     },
   },
   actions: {
     async setCurrentChat(chat: Chat) {
       this.currentChat = chat;
       this.isNewChatMode = false;
+      this.aiServiceStore.currentLLM = chat.llm;
       if (chat && !this.messagesByChat[chat.id]) {
         await this.loadMessagesForChat(chat);
         this.subscribeToChannel(chat.id);
@@ -58,7 +53,7 @@ export const useChatStore = defineStore("chatStore", {
       this.messagesByChat = {};
       this.unsubscribeFromChannel();
     },
-    async sendMessage(content: string, llm: LLM) {
+    async messageSendingProcess(content: string) {
       const newMessage = {
         id: null,
         content,
@@ -66,51 +61,36 @@ export const useChatStore = defineStore("chatStore", {
         type: "outgoing",
       } as Message;
 
-      if (this.isNewChatMode) {
-        await this.sendMessageInNewChat(newMessage, llm);
-      } else {
-        if (this.currentChat) {
-          await this.sendMessageInExistingChat(newMessage, this.currentChat.id);
-        }
-      }
-    },
-    async sendMessageInNewChat(message: Message, llm: LLM) {
-      this.isGeneratingAnswer = true;
-      this.currentAssistantMessage = {
-        id: null,
-        content: "",
-        timestamp: new Date(),
-        type: "incoming",
-      } as Message;
-
-      try {
-        const newChatResoponse = await api.post("/api/chat/create", {
-          llm_id: llm.id,
-        });
-
-        const data = newChatResoponse.data;
-
-        const newChat: Chat = {
-          id: data.chat.id,
-          llm: llm,
-          name: "New chat",
-          created_at: data.chat.created_at,
-        };
-
+      if (this.isNewChatMode && this.aiServiceStore.currentLLM) {
+        let newChat = await this.createChat(this.aiServiceStore.currentLLM);
         this.chats.unshift(newChat);
 
         router.push({ name: "chat", params: { chat_id: newChat.id } });
         await this.setCurrentChat(newChat);
-
-        await this.sendMessageInExistingChat(message, newChat.id);
-      } catch (error) {
-        console.error("Error sending message in new chat:", error);
-        this.isGeneratingAnswer = false;
-
-        throw error;
+        await this.sendMessage(newMessage, newChat.id);
+      } else {
+        if (this.currentChat) {
+          await this.sendMessage(newMessage, this.currentChat.id);
+        }
       }
     },
-    async sendMessageInExistingChat(message: Message, chat_id: number) {
+    async createChat(llm: LLM): Promise<Chat> {
+      const newChatResoponse = await api.post("/api/chat/create", {
+        llm_id: llm.id,
+      });
+
+      const data = newChatResoponse.data;
+
+      const newChat: Chat = {
+        id: data.chat.id,
+        llm: llm,
+        name: "New chat",
+        created_at: data.chat.created_at,
+      };
+
+      return newChat;
+    },
+    async sendMessage(message: Message, chat_id: number) {
       this.isGeneratingAnswer = true;
       this.currentAssistantMessage = {
         id: null,
