@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use Exception;
-use App\Enums\Role;
+use App\Enums\RoleEnum;
 use App\Models\Chat;
 use App\Models\Message;
 
 class ChatService
 {
-    public function sendMessage(string $content, Role $role, Chat $chat): Message
+    public function sendMessage(string $content, RoleEnum $role, Chat $chat): Message
     {
         $message = Message::create([
             'chat_id' => $chat->id,

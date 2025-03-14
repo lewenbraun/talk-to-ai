@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { useUserStore } from "@/stores/userStore";
 import { api } from "@/boot/axios";
+import { useRoute } from "vue-router";
 import router from "@/router";
 
 export interface Message {
@@ -24,8 +25,8 @@ export const useChatStore = defineStore("chatStore", {
     chats: [] as Chat[],
     messagesByChat: {} as Record<number, Message[]>,
     isNewChatMode: false,
-    isGeneratingAnswer: false, //  Добавляем состояние "генерации ответа"
-    currentAssistantMessage: null as Message | null, // Текущее сообщение ассистента (для стриминга)
+    isGeneratingAnswer: false,
+    currentAssistantMessage: null as Message | null,
   }),
   getters: {
     currentMessages(state): Message[] {
@@ -78,7 +79,7 @@ export const useChatStore = defineStore("chatStore", {
         id: null,
         content: "",
         timestamp: new Date(),
-        type: "incoming", // или 'assistant', как у вас принято
+        type: "incoming",
       } as Message;
 
       try {
@@ -100,7 +101,7 @@ export const useChatStore = defineStore("chatStore", {
         await this.sendMessageInExistingChat(message, newChat.id);
       } catch (error) {
         console.error("Error sending message in new chat:", error);
-        this.isGeneratingAnswer = false; // Останавливаем индикацию при ошибке
+        this.isGeneratingAnswer = false;
 
         throw error;
       }
@@ -148,8 +149,8 @@ export const useChatStore = defineStore("chatStore", {
         this.messagesByChat[chat.id] = messagesResponse.data.map(
           (msg: Message) => ({
             ...msg,
-            timestamp: new Date(msg.created_at), // Преобразуем timestamp
-            type: msg.role === "user" ? "outgoing" : "incoming", //  Определяем type
+            timestamp: new Date(msg.created_at),
+            type: msg.role === "user" ? "outgoing" : "incoming",
           })
         );
       } catch (error) {

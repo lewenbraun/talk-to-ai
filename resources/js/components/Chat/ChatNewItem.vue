@@ -18,13 +18,13 @@
 
 <script setup lang="ts">
 import { defineProps, computed } from "vue";
-import { useRoute } from "vue-router";
+import { useChatStore } from "@/stores/chatStore";
 import VueFeather from "vue-feather";
 
 defineProps<{
   icon?: string;
 }>();
 
-const route = useRoute();
-const isRouteNewChat = computed(() => route.path === "/new-chat");
+const chatStore = useChatStore();
+const isRouteNewChat = computed(() => chatStore.isNewChatMode);
 </script>

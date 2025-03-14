@@ -4,48 +4,46 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\Role;
-use App\Models\Chat;
-use App\Models\Message;
-use App\Services\LLMService;
-use Illuminate\Http\Request;
-use App\Services\ChatService;
-use App\Jobs\GenerateLLMAnswer;
+use App\Enums\RoleEnum;
+use App\Http\Requests\LLM\SendMessageInExistingChatRequest;
 use App\Http\Resources\ChatResource;
 use App\Http\Resources\MessageResource;
+use App\Jobs\GenerateLLMAnswer;
+use App\Models\Chat;
+use App\Models\Message;
+use App\Services\ChatService;
+use Illuminate\Http\JsonResponse;
 
 class ChatController extends Controller
 {
     private ChatService $chatService;
-    private LLMService $llmService;
 
-    public function __construct(ChatService $chatService, LLMService $llmService)
+    public function __construct(ChatService $chatService)
     {
         $this->chatService = $chatService;
-        $this->llmService = $llmService;
     }
 
-    public function chatList()
+    public function list(): JsonResponse
     {
         $chats = Chat::where('user_id', auth()->id())
             ->orderBy('created_at', 'desc')
             ->take(20)
             ->get();
 
-        return $chats;
+        return response()->json($chats);
     }
 
-    public function chatMessages(Chat $chat)
+    public function chatMessages(Chat $chat): JsonResponse
     {
         $messages = Message::where('chat_id', $chat->id)
             ->orderBy('created_at', 'asc')
             ->take(20)
             ->get();
 
-        return $messages;
+        return response()->json($messages);
     }
 
-    public function createChat()
+    public function createChat(): array
     {
         $chat = Chat::create([
             'user_id' => auth()->id(),
@@ -57,15 +55,15 @@ class ChatController extends Controller
         ];
     }
 
-    public function sendMessageInExistingChat(Request $request)
+    public function sendMessageInExistingChat(SendMessageInExistingChatRequest $request): array
     {
         $content = $request->input('content');
 
         $chat = Chat::findOrFail($request->chat_id);
 
-        $message = $this->chatService->sendMessage($content, Role::USER, $chat);
+        $message = $this->chatService->sendMessage($content, RoleEnum::USER, $chat);
 
-        GenerateLLMAnswer::dispatch($chat->id, $message);
+        GenerateLLMAnswer::dispatch($chat, $message);
 
         return [
             'message' => new MessageResource($message)

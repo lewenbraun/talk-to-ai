@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\Role;
+use App\Enums\RoleEnum;
 use App\Models\Chat;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
@@ -18,7 +18,7 @@ return new class () extends Migration {
             $table->id();
             $table->foreignIdFor(Chat::class);
             $table->text('content');
-            $table->enum('role', array_column(Role::cases(), 'value'));
+            $table->enum('role', array_column(RoleEnum::cases(), 'value'));
             $table->timestamps();
         });
     }

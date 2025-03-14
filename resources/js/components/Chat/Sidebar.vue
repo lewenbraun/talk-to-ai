@@ -6,32 +6,12 @@
       <h1 class="text-2xl font-semibold">Ai chat</h1>
       <div class="relative">
         <button
-          @click="menuOpen = !menuOpen"
+          @click="openSetting = !openSetting"
           class="focus:outline-none cursor-pointer flex self-center"
         >
-          <vue-feather type="settings" />
+          <VueFeather type="settings" />
         </button>
-        <div
-          v-if="menuOpen"
-          class="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg"
-        >
-          <ul class="py-2 px-3">
-            <li>
-              <a
-                href="#"
-                class="block px-4 py-2 text-gray-800 hover:text-gray-400"
-                >Option 1</a
-              >
-            </li>
-            <li>
-              <a
-                href="#"
-                class="block px-4 py-2 text-gray-800 hover:text-gray-400"
-                >Option 2</a
-              >
-            </li>
-          </ul>
-        </div>
+        <AiServiceList :openListLLMs="openListLLMs" />
       </div>
     </header>
     <div class="overflow-y-auto h-full p-3 mb-9 pb-20">
@@ -45,24 +25,35 @@
       />
     </div>
   </div>
+  <SettingAiService
+    v-model:openSetting="openSetting"
+    @confirm="handleConfirm"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useChatStore, Chat } from "@/stores/chatStore";
+import AiServiceList from "@/components/Chat/AiServiceList.vue";
 import ChatItem from "@/components/Chat/ChatItem.vue";
+import ChatNewItem from "@/components/Chat/ChatNewItem.vue";
+import SettingAiService from "@/components/Setting/SettingAiService.vue";
 import VueFeather from "vue-feather";
-import ChatNewItem from "./ChatNewItem.vue";
 
 const router = useRouter();
 const chatStore = useChatStore();
 
-const menuOpen = ref(false);
+const openListLLMs = ref(false);
+const openSetting = ref(false);
 
 const selectChat = (chat: Chat) => {
   router.push({ name: "chat", params: { chat_id: chat.id } });
   chatStore.setCurrentChat(chat);
+};
+
+const handleConfirm = () => {
+  openSetting.value = false;
 };
 
 const startNewChat = () => {

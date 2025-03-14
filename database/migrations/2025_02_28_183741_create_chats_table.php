@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\LLM;
 use App\Models\User;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
@@ -16,6 +17,7 @@ return new class () extends Migration {
         Schema::create('chats', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class);
+            $table->foreignIdFor(LLM::class);
             $table->string('name');
             $table->timestamps();
         });

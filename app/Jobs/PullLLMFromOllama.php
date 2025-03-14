@@ -4,42 +4,42 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Models\Chat;
-use App\Models\Message;
+use App\Models\LLM;
 use Illuminate\Bus\Queueable;
+use App\Services\OllamaService;
 use App\Services\AiManagerService;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 
-class GenerateLLMAnswer implements ShouldQueue
+class PullLLMFromOllama implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
 
-    public Chat $chat;
+    public LLM $llm;
 
     /**
      * Create a new job instance.
      *
-     * @param Chat $chat
+     * @param LLM $llm
      */
-    public function __construct(Chat $chat)
+    public function __construct(LLM $llm)
     {
-        $this->chat = $chat;
+        $this->llm = $llm;
     }
 
     /**
      * Execute the job.
      *
-     * @param AiManagerService $llmService
+     * @param OllamaService $ollamaService
      * @return void
      */
-    public function handle(AiManagerService $llmService): void
+    public function handle(OllamaService $ollamaService): void
     {
-        $llmService->redirectGenerateAnswer($this->chat);
+        $ollamaService->pullLLM($this->llm);
     }
 }
