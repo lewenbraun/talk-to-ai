@@ -1,16 +1,16 @@
 <template>
-  <footer class="bg-white border-t border-gray-300 p-4">
-    <div class="flex items-center">
+  <footer class="p-4 flex justify-center">
+    <div class="flex items-center w-[750px]">
       <input
         v-model="newMessage"
         type="text"
         placeholder="Enter your message..."
-        class="w-full p-2 rounded-md border border-gray-400 focus:outline-none focus:border-blue-500"
+        class="w-full p-2 border border-gray-300 focus:outline-none focus:border-gray-500 rounded-md bg-white text-gray-900 shadow-xs ring-gray-300 ring-inset"
         @keyup.enter="sendMessage"
       />
       <button
         @click="sendMessage"
-        class="bg-indigo-500 text-white px-4 py-2 rounded-md ml-2"
+        class="rounded-md cursor-pointer bg-white font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 px-4 py-2 ml-2"
       >
         Send
       </button>

@@ -1,8 +1,8 @@
 <template>
-  <div class="flex flex-1 flex-col h-[400px] overflow-hidden">
+  <div class="flex flex-1 flex-col h-[400px] overflow-hidden items-center">
     <div
       ref="messagesContainer"
-      class="bg-gray-50 py-5  flex-1 overflow-y-auto p-4 min-h-0"
+      class="py-5 flex-1 overflow-y-auto p-4 min-h-0 w-[750px]"
       @scroll="onScroll"
     >
       <ChatMessage

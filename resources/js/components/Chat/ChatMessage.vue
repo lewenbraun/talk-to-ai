@@ -1,15 +1,5 @@
 <template>
   <div class="flex items-center" :class="messageClass">
-    <div
-      v-if="isIncoming"
-      class="w-9 h-9 rounded-full items-center justify-center mr-2"
-    >
-      <img
-        :src="incomingAvatar"
-        alt="User Avatar"
-        class="w-8 h-8 rounded-full"
-      />
-    </div>
     <VueFeather
       v-if="message.content === ''"
       type="loader"
@@ -19,12 +9,6 @@
 
     <div v-else class="flex max-w-258 p-3 rounded-lg" :class="bubbleClass">
       <vue-markdown :source="message.content" />
-    </div>
-    <div
-      v-if="!isIncoming"
-      class="w-9 h-9 rounded-full flex items-center justify-center ml-2"
-    >
-      <img :src="outgoingAvatar" alt="My Avatar" class="w-8 h-8 rounded-full" />
     </div>
   </div>
 </template>
@@ -43,9 +27,4 @@ const messageClass = computed(() =>
 const bubbleClass = computed(() =>
   isIncoming.value ? "bg-white text-gray-700" : "bg-indigo-500 text-white"
 );
-
-const incomingAvatar =
-  "https://placehold.co/200x/ffa8e4/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato";
-const outgoingAvatar =
-  "https://placehold.co/200x/b7a8ff/ffffff.svg?text=ʕ•́ᴥ•̀ʔ&font=Lato";
 </script>
