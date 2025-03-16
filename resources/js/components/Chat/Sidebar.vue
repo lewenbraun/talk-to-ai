@@ -1,27 +1,33 @@
 <template>
-  <div class="w-1/4 bg-white border-r border-gray-300">
-    <header
-      class="p-4 border-b border-gray-300 flex justify-between items-center bg-indigo-600 text-white"
-    >
-      <h1 class="text-2xl font-semibold">Ai chat</h1>
-      <div class="relative">
-        <button
-          @click="openSetting = !openSetting"
-          class="focus:outline-none cursor-pointer flex self-center"
-        >
-          <VueFeather type="settings" />
-        </button>
-      </div>
-    </header>
-    <div class="overflow-y-auto h-full p-3 mb-9 pb-20">
+  <div class="w-[400px] bg-white border-r border-gray-300">
+    <div class="overflow-y-auto max-h-[calc(100vh-60px)] p-3">
       <ChatNewItem icon="plus" @click="startNewChat()" />
-      <hr class="my-2" />
+      <hr class="my-2 border-gray-400" />
       <ChatItem
         v-for="(chat, index) in chatStore.chats"
         :chat="chat"
         :key="index"
         @click="selectChat(chat)"
       />
+    </div>
+    <hr class="border-gray-300" />
+    <div class="w-full h-[60px] flex items-center justify-between">
+      <div class="relative ml-2">
+        <button
+          @click="openSetting = !openSetting"
+          class="focus:outline-none cursor-pointer flex self-center hover:bg-gray-100 p-2 rounded-full"
+        >
+          <VueFeather stroke="gray" type="user" size="26" />
+        </button>
+      </div>
+      <div class="relative mr-2">
+        <button
+          @click="openSetting = !openSetting"
+          class="focus:outline-none cursor-pointer flex self-center hover:bg-gray-100 p-2 rounded-full"
+        >
+          <VueFeather stroke="gray" type="settings" size="26" />
+        </button>
+      </div>
     </div>
   </div>
   <SettingAiService
