@@ -26,7 +26,7 @@
 import { computed, ref } from "vue";
 import { useChatStore } from "@/stores/chatStore";
 import { useAiServiceStore } from "@/stores/aiServiceStore";
-import AiServiceList from "@/components/Chat/AiServiceList.vue";
+import AiServiceList from "@/components/Chat/Header/AiServiceList.vue";
 
 const openListLLMs = ref(false);
 const chatStore = useChatStore();

@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import ChatHeader from "@/components/Chat/ChatHeader.vue";
+import ChatHeader from "@/components/Chat/Header/ChatHeader.vue";
 import ChatMessages from "@/components/Chat/ChatMessages.vue";
 import ChatInput from "@/components/Chat/ChatInput.vue";
 </script>
