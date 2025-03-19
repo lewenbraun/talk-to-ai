@@ -14,6 +14,7 @@ use App\Jobs\PullLLMFromOllama;
 use App\Services\MessageService;
 use App\Events\LLMChunkGenerated;
 use App\Events\LLMAnswerGenerated;
+use App\Models\UserSettingAiService;
 use App\Respositories\MessageRepository;
 use Illuminate\Database\Eloquent\Collection;
 use App\Services\Contracts\AiServiceContract;
@@ -24,7 +25,19 @@ class OllamaService implements AiServiceContract
 
     public function __construct()
     {
-        $this->client = Ollama::client();
+        $ollamaId = AiService::where('name', AiServiceEnum::OLLAMA->value)->first()->id;
+
+        $ollama_url_api = UserSettingAiService::where('user_id', auth()->id())
+            ->with('aiService')
+            ->where('ai_service_id', $ollamaId)
+            ->first()
+            ->url_api ?? null;
+
+        if ($ollama_url_api) {
+            $this->client = Ollama::client($ollama_url_api);
+        } else {
+            $this->client = Ollama::client();
+        }
     }
 
     public function generateAnswer(Chat $chat): void

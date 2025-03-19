@@ -78,7 +78,7 @@ export const useAiServiceStore = defineStore("aiServiceStore", {
     async updateAiServiceUrl(ai_service_id: number, new_url: string) {
       const service = this.aiServices.find((s) => s.id === ai_service_id);
       if (service) {
-        let response = await api.post(`/api/ai-service/update`, {
+        let response = await api.post(`/api/ai-service/api-url/set`, {
           ai_service_id: ai_service_id,
           url_api: new_url,
         });

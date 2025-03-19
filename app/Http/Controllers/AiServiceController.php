@@ -22,19 +22,10 @@ class AiServiceController extends Controller
     {
         $this->aiManagerService->updateListLLMs();
 
-        $aiServiceList = AiService::with('llms')->get();
+        $aiServiceList = AiService::with(['llms' => function ($query) {
+            $query->where('user_id', auth()->id());
+        }])->get();
 
         return response()->json($aiServiceList);
-    }
-
-    public function update(UpdateAiServiceRequest $request): JsonResponse
-    {
-        $aiService = AiService::find($request->input('ai_service_id'));
-
-        $aiService->update([
-            'url_api' => $request->input('url_api'),
-        ]);
-
-        return response()->json();
     }
 }

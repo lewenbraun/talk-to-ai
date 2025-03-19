@@ -1,5 +1,7 @@
 <template>
-  <div class="w-[400px] bg-white border-r border-gray-300">
+  <div
+    class="w-[400px] bg-white border-r border-gray-300 flex flex-col h-full relative"
+  >
     <div class="overflow-y-auto max-h-[calc(100vh-60px)] p-3">
       <NewChatItem icon="plus" @click="startNewChat()" />
       <hr class="my-2 border-gray-400" />
@@ -10,8 +12,10 @@
         @click="selectChat(chat)"
       />
     </div>
-    <hr class="border-gray-300" />
-    <UtilityPanel />
+    <div class="absolute bottom-0 w-full">
+      <hr class="border-gray-300" />
+      <UtilityPanel />
+    </div>
   </div>
 </template>
 

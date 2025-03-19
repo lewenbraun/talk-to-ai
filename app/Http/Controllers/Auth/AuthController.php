@@ -4,46 +4,38 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\Response;
-use Illuminate\Routing\ResponseFactory;
+use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Routing\ResponseFactory;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
 
 class AuthController extends Controller
 {
-    public function register(RegisterRequest $request): Response|ResponseFactory
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $user = User::create([
-            'name' => $request['name'],
-            'nickname' => $request['nickname'],
+        $user = auth()->user();
+        
+        $user->update([
             'email' => $request['email'],
             'password' => bcrypt($request['password']),
+            'is_temporary'  => false,
         ]);
 
         $token = $user->createToken('main')->plainTextToken;
 
-        return response([
+        return response()->json([
             'user' => $user,
             'token' => $token,
         ]);
     }
 
-    public function login(LoginRequest $request): Response|ResponseFactory
+    public function login(LoginRequest $request): JsonResponse
     {
-        $credentials = $request->validate([
-            'email' => 'required|email|string|exists:users,email',
-            'password' => [
-                'required',
-            ],
-            'remember' => 'boolean',
-        ]);
-        $remember = $credentials['remember'] ?? false;
-        unset($credentials['remember']);
-
-        if (! Auth::attempt($credentials, $remember)) {
+        if (!Auth::attempt($request->toArray())) {
             return response([
                 'error' => 'The Provided credentials are not correct',
             ], 422);
@@ -53,31 +45,30 @@ class AuthController extends Controller
 
         $token = $user->createToken('main')->plainTextToken;
 
-        return response([
+        return response()->json([
+            'user' => $user,
             'token' => $token,
         ]);
     }
 
-    public function logout(): Response|ResponseFactory
+    public function logout(): JsonResponse
     {
         $user = Auth::user();
 
         $user->currentAccessToken()->delete();
 
-        return response([
-            'success' => true,
-        ]);
+        return response()->json();
     }
 
-    public function createTemporaryUser()
+    public function createTemporaryUser(): JsonResponse
     {
         $user = User::create([
-            'isTemporary' => true
+            'is_temporary' => true
         ]);
 
         $token = $user->createToken('main')->plainTextToken;
 
-        return response([
+        return response()->json([
             'user' => $user,
             'token' => $token,
         ]);

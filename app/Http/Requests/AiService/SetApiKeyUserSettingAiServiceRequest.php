@@ -6,7 +6,7 @@ namespace App\Http\Requests\AiService;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AddApiKeyUserSettingAiServiceRequest extends FormRequest
+class SetApiKeyUserSettingAiServiceRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

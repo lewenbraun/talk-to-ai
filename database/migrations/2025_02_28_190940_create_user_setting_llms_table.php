@@ -19,7 +19,8 @@ return new class () extends Migration {
             $table->id();
             $table->foreignIdFor(User::class);
             $table->foreignIdFor(AiService::class);
-            $table->string('api_key');
+            $table->string('api_key')->nullable();
+            $table->string('url_api')->nullable();
             $table->timestamps();
         });
     }
