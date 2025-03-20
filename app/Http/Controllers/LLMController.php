@@ -10,38 +10,43 @@ use App\Models\AiService;
 use App\Models\LLM;
 use App\Services\AiManagerService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Throwable;
 
 class LLMController extends Controller
 {
-    private AiManagerService $aiManagerService;
-
-    public function __construct(AiManagerService $aiManagerService)
-    {
-        $this->aiManagerService = $aiManagerService;
-    }
-
     public function listByAiService(AiService $aiService): JsonResponse
     {
-        $llms = $this->aiManagerService->redirectListLLM($aiService);
+        $aiManager = new AiManagerService($aiService);
+        $llms = $aiManager->redirectListLLM();
 
         return response()->json($llms);
     }
 
     public function add(AddLLMRequest $request): JsonResponse
     {
-        $aiService = AiService::findOrFail($request->input('ai_service_id'));
         $llmName = $request->input('llm_name');
-        $addedLLM = $this->aiManagerService->redirectAddLLM($aiService, $llmName);
+        $aiServiceId = $request->input('ai_service_id');
+
+        $aiService = AiService::findOrFail($aiServiceId);
+        $aiManager = new AiManagerService($aiService);
+
+        $addedLLM = $aiManager->redirectAddLLM($llmName);
 
         return response()->json($addedLLM);
     }
 
     public function delete(DeleteLLMRequest $request): JsonResponse
     {
-        $llm = LLM::findOrFail($request->input('llm_id'));
-        $aiService = AiService::findOrFail($request->input('ai_service_id'));
+        $llmId = $request->input('llm_id');
+        $aiServiceId = $request->input('ai_service_id');
 
-        $this->aiManagerService->redirectDeleteLLM($aiService, $llm);
+        $llm = LLM::findOrFail($llmId);
+        $aiService = AiService::findOrFail($aiServiceId);
+
+        $aiManager = new AiManagerService($aiService);
+
+        $aiManager->redirectDeleteLLM($llm);
 
         return response()->json();
     }

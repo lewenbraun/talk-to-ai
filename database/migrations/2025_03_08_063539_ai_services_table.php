@@ -17,14 +17,12 @@ return new class () extends Migration {
         Schema::create('ai_services', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('url_api')->nullable();
             $table->timestamps();
         });
 
         AiService::insert([
             'id' => 1,
             'name' => AiServiceEnum::OLLAMA->value,
-            'url_api' => 'http://localhost:11434',
         ]);
     }
 

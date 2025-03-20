@@ -1,6 +1,6 @@
 import { createRouter, RouteRecordRaw, createWebHistory } from "vue-router";
 import { useUserStore } from "../stores/userStore";
-import { Chat, useChatStore } from "../stores/chatStore";
+import { useChatStore } from "../stores/chatStore";
 import { useAiServiceStore } from "@/stores/aiServiceStore";
 
 const routes: RouteRecordRaw[] = [
@@ -32,7 +32,7 @@ const routes: RouteRecordRaw[] = [
           const chatId = to.params.chat_id;
 
           const chat = chatStore.chats.find(
-            (item) => String(item.id) === chatId,
+            (item) => String(item.id) === chatId
           );
 
           try {
@@ -50,7 +50,9 @@ const routes: RouteRecordRaw[] = [
       },
     ],
     beforeEnter: async (to, from, next) => {
+      const userStore = useUserStore();
       const aiServiceStore = useAiServiceStore();
+      await userStore.loadUser();
       await aiServiceStore.loadAiServiceList();
 
       next();
@@ -59,29 +61,16 @@ const routes: RouteRecordRaw[] = [
   {
     name: "regiser",
     path: "/register",
-    component: () => import("@/layouts/AuthLayout.vue"),
-    children: [
-      {
-        path: "",
-        component: () => import("@/pages/Auth/RegisterPage.vue"),
-        name: "register",
-      },
-    ],
+    component: () => import("@/pages/Auth/RegisterPage.vue"),
   },
   {
+    name: "login",
     path: "/login",
-    component: () => import("@/layouts/AuthLayout.vue"),
-    children: [
-      {
-        path: "",
-        component: () => import("@/pages/Auth/LoginPage.vue"),
-        name: "login",
-      },
-    ],
+    component: () => import("@/pages/Auth/LoginPage.vue"),
   },
   {
     path: "/:catchAll(.*)*",
-    component: () => import("@/pages/ErrorNotFound.vue"),
+    redirect: { name: "new-chat" },
   },
 ];
 
@@ -92,11 +81,11 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore();
-  if (!userStore.user.token) {
+  if (!userStore.token) {
     await userStore.createTemporaryUser();
   }
   if (
-    userStore.user.token &&
+    !userStore.isTemporaryUser() &&
     (to.name === "login" || to.name === "register" || to.name === "main")
   ) {
     next({ name: "new-chat" });

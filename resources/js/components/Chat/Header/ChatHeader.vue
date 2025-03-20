@@ -26,7 +26,7 @@
 import { computed, ref } from "vue";
 import { useChatStore } from "@/stores/chatStore";
 import { useAiServiceStore } from "@/stores/aiServiceStore";
-import AiServiceList from "@/components/Chat/AiServiceList.vue";
+import AiServiceList from "@/components/Chat/Header/AiServiceList.vue";
 
 const openListLLMs = ref(false);
 const chatStore = useChatStore();
@@ -37,12 +37,8 @@ const isNewChatMode = computed(() => {
 });
 
 const currentModel = computed(() => {
-  if (isNewChatMode.value) {
-    return aiServiceStore.currentLLM
-      ? aiServiceStore.currentLLM.name
-      : "Select LLM";
-  } else if (chatStore.currentChat) {
-    return chatStore.currentChat.llm.name;
-  }
+  return isNewChatMode.value
+    ? aiServiceStore.currentLLM?.name ?? "Select LLM"
+    : chatStore.currentChat?.llm?.name ?? "LLM not found";
 });
 </script>

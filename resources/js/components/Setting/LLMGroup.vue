@@ -46,10 +46,11 @@
 
 <script setup lang="ts">
 import { defineProps, ref } from "vue";
-import { LLM, useAiServiceStore } from "@/stores/aiServiceStore";
+import { useAiServiceStore } from "@/stores/aiServiceStore";
 import VueFeather from "vue-feather";
 import FormAddLLM from "@/components/Setting/FormAddLLM.vue";
 import LLMItem from "@/components/Setting/LLMItem.vue";
+import type { LLM } from "@/types/aiService";
 
 const openFormAddLLM = ref(false);
 

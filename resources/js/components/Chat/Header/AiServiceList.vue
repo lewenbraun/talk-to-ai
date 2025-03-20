@@ -26,8 +26,9 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, onUnmounted } from "vue";
-import { AiService, useAiServiceStore } from "@/stores/aiServiceStore";
+import { useAiServiceStore } from "@/stores/aiServiceStore";
 import { defineProps, defineEmits } from "vue";
+import type { AiService } from "@/types/aiService";
 
 const aiServiceStore = useAiServiceStore();
 

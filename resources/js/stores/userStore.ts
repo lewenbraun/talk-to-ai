@@ -1,78 +1,76 @@
 import { defineStore } from "pinia";
 import { api } from "@/boot/axios";
-
-interface UserState {
-  id: number | null;
-  name?: string;
-  token: string | null;
-}
+import { handleApiError } from "@/utils/errorHandler";
+import { LoginData, RegisterData, UserState, User } from "@/types/user";
 
 export const useUserStore = defineStore("userStore", {
-  state: (): { user: UserState } => ({
+  state: (): UserState => ({
     user: {
-      id: Number(localStorage.getItem("USER_ID")),
-      name: "",
-      token: localStorage.getItem("TOKEN"),
+      is_temporary: true,
     },
+    token: localStorage.getItem("TOKEN"),
   }),
 
-  getters: {
-    isAuthenticated: (state) => !!state.user.token,
-  },
+  getters: {},
 
   actions: {
-    async register(user: Record<string, unknown>) {
-      const { data } = await api.post("/api/register", user);
-      this.setUser(data.user);
-      this.setToken(data.token);
-      return data;
+    async register(user: RegisterData): Promise<void> {
+      try {
+        const { data } = await api.post("/register", user);
+        this.setUser(data.user);
+        this.setToken(data.token);
+      } catch (error) {
+        handleApiError(error);
+      }
     },
-    async login(user: Record<string, unknown>) {
-      const { data } = await api.post("/api/login", user);
-      this.setUser(data.user);
-      this.setToken(data.token);
+    async login(user: LoginData): Promise<void> {
+      try {
+        const { data } = await api.post("/login", user);
+        this.setUser(data.user);
+        this.setToken(data.token);
+      } catch (error) {
+        handleApiError(error);
+      }
     },
-    async logout() {
-      await api.post("/api/logout");
-      this.logoutUser();
+    async logout(): Promise<void> {
+      try {
+        await api.post("/logout");
+        this.logoutUser();
+      } catch (error) {
+        handleApiError(error);
+      }
     },
-    async updateUser(user: UserState): Promise<UserState> {
-      const { data } = await api.post("/api/user/update", user);
+    async loadUser(): Promise<void> {
+      const { data } = await api.get("/user");
       this.setUser(data);
-      return data;
     },
-    async getUser() {
-      const { data } = await api.get("/api/user");
-      this.setUser(data);
-    },
-    async getUserId() {
-      const { data } = await api.get("/api/user");
-      this.setUserId(data);
-    },
-    setUser(user: UserState) {
+    setUser(user: User): void {
       this.user = user;
     },
-    setUserId(user: UserState) {
-      this.user.id = user.id;
-      localStorage.setItem("USER_ID", String(user.id));
-    },
-    setToken(token: string) {
-      this.user.token = token;
+    setToken(token: string): void {
+      this.token = token;
       localStorage.setItem("TOKEN", token);
     },
-    userAuth() {
-      return this.user.token ? true : false;
+    isUserAuth(): boolean {
+      return this.token ? true : false;
     },
-    logoutUser() {
-      this.user.token = null;
-      this.user.name = "";
+    isTemporaryUser(): boolean {
+      return this.user.is_temporary ? true : false;
+    },
+    logoutUser(): void {
+      this.token = null;
       localStorage.removeItem("TOKEN");
+      window.location.reload();
     },
-    async createTemporaryUser() {
-      if (!this.userAuth()) {
-        const { data } = await api.post("/api/create-temporary-user");
-        this.setToken(data.token);
-        this.setUserId(data.user);
+    async createTemporaryUser(): Promise<void> {
+      if (!this.isUserAuth()) {
+        try {
+          const { data } = await api.post("/create-temporary-user");
+          this.setUser(data.user);
+          this.setToken(data.token);
+        } catch (error) {
+          handleApiError(error);
+        }
       }
     },
   },

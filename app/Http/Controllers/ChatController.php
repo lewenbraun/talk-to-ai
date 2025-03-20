@@ -14,6 +14,7 @@ use App\Http\Resources\ChatResource;
 use App\Http\Resources\MessageResource;
 use App\Http\Requests\Chat\CreateChatRequest;
 use App\Http\Requests\Chat\SendMessageInExistingChatRequest;
+use Throwable;
 
 class ChatController extends Controller
 {
@@ -45,7 +46,7 @@ class ChatController extends Controller
         return response()->json($messages);
     }
 
-    public function createChat(CreateChatRequest $request): array
+    public function createChat(CreateChatRequest $request): JsonResponse
     {
         $chat = Chat::create([
             'user_id' => auth()->id(),
@@ -53,23 +54,22 @@ class ChatController extends Controller
             'name' => 'New chat',
         ]);
 
-        return [
-            'chat' => new ChatResource($chat),
-        ];
+        return response()->json(new ChatResource($chat));
     }
 
-    public function sendMessage(SendMessageInExistingChatRequest $request): array
+    public function sendMessage(SendMessageInExistingChatRequest $request): JsonResponse
     {
         $content = $request->input('content');
+        $chatId = $request->input('chat_id');
 
-        $chat = Chat::findOrFail($request->chat_id);
+        try {
+            $chat = Chat::findOrFail($chatId);
+            $message = $this->chatService->sendMessage($content, RoleEnum::USER, $chat);
+            GenerateLLMAnswer::dispatch($chat, $message);
 
-        $message = $this->chatService->sendMessage($content, RoleEnum::USER, $chat);
-
-        GenerateLLMAnswer::dispatch($chat, $message);
-
-        return [
-            'message' => new MessageResource($message)
-        ];
+            return response()->json(new MessageResource($message));
+        } catch (Throwable $e) {
+            return response()->json(['message' => __('errors.message_send_failed')], 500);
+        }
     }
 }

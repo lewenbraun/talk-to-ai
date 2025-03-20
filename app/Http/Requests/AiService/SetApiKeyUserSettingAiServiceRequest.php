@@ -6,7 +6,7 @@ namespace App\Http\Requests\AiService;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateAiServiceRequest extends FormRequest
+class SetApiKeyUserSettingAiServiceRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,8 +24,8 @@ class UpdateAiServiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ai_service_id' => ['required', 'integer', 'exists:ai_services,id'],
-            'url_api' => ['required', 'url'],
+            'ai_service_id' => 'required|integer|exists:ai_services,id',
+            'api_key' => 'required|string',
         ];
     }
 }

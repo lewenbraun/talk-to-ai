@@ -16,8 +16,9 @@
 
 <script setup lang="ts">
 import { defineProps, defineEmits, computed } from "vue";
-import { useChatStore, type Chat } from "@/stores/chatStore";
+import { useChatStore } from "@/stores/chatStore";
 import VueFeather from "vue-feather";
+import type { Chat } from "@/types/chat";
 
 const props = defineProps<{
   chat: Chat;

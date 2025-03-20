@@ -14,24 +14,28 @@ use App\Jobs\PullLLMFromOllama;
 use App\Services\MessageService;
 use App\Events\LLMChunkGenerated;
 use App\Events\LLMAnswerGenerated;
+use App\Models\UserSettingAiService;
 use App\Respositories\MessageRepository;
 use Illuminate\Database\Eloquent\Collection;
 use App\Services\Contracts\AiServiceContract;
 
 class OllamaService implements AiServiceContract
 {
-    private $client;
+    private Ollama $client;
+    private string $ollama_url_api;
+    private int $ollama_id;
 
-    public function __construct()
+    public function __construct(string $ollama_url_api)
     {
-        $this->client = Ollama::client();
+        $this->client = Ollama::client($ollama_url_api);
+        $this->ollama_url_api = $ollama_url_api;
+        $this->ollama_id = $this->getIdOllamaInDb();
     }
 
     public function generateAnswer(Chat $chat): void
     {
         $messages = MessageRepository::messagesByChat($chat->id, 20);
         $formattedMessages = MessageService::formatMessageForChat($messages);
-
 
         $fullMessage = $this->processLLMStream($chat, $formattedMessages);
         $this->saveLLMAnswer($chat->id, $fullMessage);
@@ -69,16 +73,16 @@ class OllamaService implements AiServiceContract
         ]);
     }
 
-    public function addLLM(int $aiServiceId, string $llmName): LLM
+    public function addLLM(string $llmName): LLM
     {
         $addedModel = LLM::create([
             'user_id' => auth()->id(),
-            'ai_service_id' => $aiServiceId,
+            'ai_service_id' => $this->ollama_id,
             'name' => $llmName,
             'isLoaded' => false,
         ]);
 
-        PullLLMFromOllama::dispatch($addedModel);
+        PullLLMFromOllama::dispatch($addedModel, $this->ollama_url_api);
 
         return $addedModel;
     }
@@ -105,12 +109,12 @@ class OllamaService implements AiServiceContract
         $llm->delete();
     }
 
-    public function listLLM(AiService $aiService): Collection
+    public function listLLM(): Collection
     {
         $this->updateListLLM();
 
         $listLLM = LLM::where('user_id', auth()->id())
-            ->where('ai_service_id', $aiService->id)
+            ->where('ai_service_id', $this->ollama_id)
             ->get();
 
         return $listLLM;
@@ -118,12 +122,8 @@ class OllamaService implements AiServiceContract
 
     public function updateListLLM(): void
     {
-        $ollamaIdInDb = AiService::where('name', AiServiceEnum::OLLAMA->value)
-            ->first()
-            ->id;
-
         $dbModelNames = LLM::where('user_id', auth()->id())
-            ->where('ai_service_id', $ollamaIdInDb)
+            ->where('ai_service_id', $this->ollama_id)
             ->pluck('name')
             ->toArray();
 
@@ -134,17 +134,17 @@ class OllamaService implements AiServiceContract
         $diff = $this->getModelDiff($ollamaModelNames, $dbModelNames);
 
         if (!empty($diff['newModels'])) {
-            $this->addNewModels($diff['newModels'], $ollamaIdInDb);
+            $this->addNewModels($diff['newModels'], $this->ollama_id);
         }
 
-        if (!empty($diff['modelslsToUpdateIsLoaded'])) {
-            $this->updateLoadedModels($diff['modelslsToUpdateIsLoaded']);
+        if (!empty($diff['modelsForUpdateIsLoaded'])) {
+            $this->updateLoadedModels($diff['modelsForUpdateIsLoaded']);
         }
     }
 
-    private function updateLoadedModels(array $modelslsToUpdateIsLoaded): void
+    private function updateLoadedModels(array $modelsForUpdateIsLoaded): void
     {
-        foreach ($modelslsToUpdateIsLoaded as $model) {
+        foreach ($modelsForUpdateIsLoaded as $model) {
             $model->isLoaded = true;
             $model->save();
         }
@@ -157,7 +157,7 @@ class OllamaService implements AiServiceContract
 
         $dbLlmModels = LLM::with('aiService')
             ->where('user_id', auth()->id())
-            ->where('ai_service_id', AiService::where('name', AiServiceEnum::OLLAMA->value)->first()->id)
+            ->where('ai_service_id', $this->ollama_id)
             ->get();
 
         foreach ($dbLlmModels as $dbModel) {
@@ -172,17 +172,20 @@ class OllamaService implements AiServiceContract
         ];
     }
 
-    private function addNewModels(array $newModels, int $ollamaIdInDb): void
+    private function addNewModels(array $newModels): void
     {
         foreach ($newModels as $newModelName) {
             LLM::create([
                 'user_id' => auth()->id(),
-                'ai_service_id' => $ollamaIdInDb,
+                'ai_service_id' => $this->ollama_id,
                 'name' => $newModelName,
                 'isLoaded' => true,
             ]);
         }
     }
 
-
+    private function getIdOllamaInDb(): int
+    {
+        return AiService::where('name', AiServiceEnum::OLLAMA->value)->first()->id;
+    }
 }

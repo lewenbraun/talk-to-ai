@@ -9,6 +9,7 @@ declare module "vue" {
 }
 
 const api = axios.create({
+  baseURL: "/api",
   transformRequest: [
     (data) => {
       return JSON.stringify(data);
@@ -22,7 +23,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const userStore = useUserStore();
 
-  config.headers.Authorization = `Bearer ${userStore.user.token}`;
+  config.headers.Authorization = `Bearer ${userStore.token}`;
   return config;
 });
 

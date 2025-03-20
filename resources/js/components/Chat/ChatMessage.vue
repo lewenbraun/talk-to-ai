@@ -15,9 +15,9 @@
 
 <script setup lang="ts">
 import { computed, defineProps } from "vue";
-import { Message } from "@/stores/chatStore";
 import VueFeather from "vue-feather";
 import VueMarkdown from "vue-markdown-render";
+import type { Message } from "@/types/chat";
 
 const props = defineProps<{ message: Message }>();
 const isIncoming = computed(() => props.message.type === "incoming");
