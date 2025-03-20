@@ -1,20 +1,7 @@
 import { defineStore } from "pinia";
 import { api } from "@/boot/axios";
 import { handleApiError } from "@/utils/errorHandler";
-
-export interface LLM {
-  id: number;
-  name: string;
-  isLoaded: boolean;
-}
-
-export interface AiService {
-  id: number;
-  name: string;
-  url_api: string;
-  api_key?: string;
-  llms: LLM[];
-}
+import type { AiService, LLM } from "@/types/aiService";
 
 export const useAiServiceStore = defineStore("aiServiceStore", {
   state: () => ({
@@ -22,19 +9,17 @@ export const useAiServiceStore = defineStore("aiServiceStore", {
     currentLLM: null as LLM | null,
   }),
   actions: {
-    async loadAiServiceList() {
+    async loadAiServiceList(): Promise<void> {
       try {
-        const response = await api.get("/api/ai-service/list");
+        const response = await api.get("/ai-service/list");
         this.aiServices = response.data.data as AiService[];
       } catch (error) {
         handleApiError(error);
       }
     },
-    async loadAiLLMListByAiServiceId(ai_service_id: number) {
+    async loadAiLLMListByAiServiceId(ai_service_id: number): Promise<void> {
       try {
-        const response = await api.get(
-          `/api/ai-service/llm/list/${ai_service_id}`
-        );
+        const response = await api.get(`/ai-service/llm/list/${ai_service_id}`);
 
         this.aiServices.forEach((service) => {
           if (service.id === ai_service_id) {
@@ -45,9 +30,9 @@ export const useAiServiceStore = defineStore("aiServiceStore", {
         handleApiError(error);
       }
     },
-    async addLLM(ai_service_id: number, llm_name: string) {
+    async addLLM(ai_service_id: number, llm_name: string): Promise<LLM | null> {
       try {
-        const response = await api.post(`/api/ai-service/llm/add`, {
+        const response = await api.post(`/ai-service/llm/add`, {
           ai_service_id: ai_service_id,
           llm_name: llm_name,
         });
@@ -67,11 +52,12 @@ export const useAiServiceStore = defineStore("aiServiceStore", {
         return addedLLM;
       } catch (error) {
         handleApiError(error);
+        return null;
       }
     },
-    async deleteLLM(ai_service_id: number, llm_id: number) {
+    async deleteLLM(ai_service_id: number, llm_id: number): Promise<boolean> {
       try {
-        const response = await api.post(`/api/ai-service/llm/delete`, {
+        const response = await api.post(`/ai-service/llm/delete`, {
           ai_service_id: ai_service_id,
           llm_id: llm_id,
         });
@@ -83,25 +69,29 @@ export const useAiServiceStore = defineStore("aiServiceStore", {
           });
           return true;
         }
+        return false;
       } catch (error) {
         handleApiError(error);
+        return false;
       }
     },
-    async updateAiServiceUrl(ai_service_id: number, new_url: string) {
+    async updateAiServiceUrl(
+      ai_service_id: number,
+      new_url: string
+    ): Promise<boolean> {
       try {
         const service = this.aiServices.find((s) => s.id === ai_service_id);
         if (service) {
-          let response = await api.post(`/api/ai-service/api-url/set`, {
+          const response = await api.post(`/ai-service-url/set`, {
             ai_service_id: ai_service_id,
             url_api: new_url,
           });
-          if (response.status === 200) {
-            service.url_api = new_url;
-            return true;
-          }
+          return response.status === 200;
         }
+        return false;
       } catch (error) {
         handleApiError(error);
+        return false;
       }
     },
   },

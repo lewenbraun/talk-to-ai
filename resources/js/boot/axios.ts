@@ -9,6 +9,7 @@ declare module "vue" {
 }
 
 const api = axios.create({
+  baseURL: "/api",
   transformRequest: [
     (data) => {
       return JSON.stringify(data);

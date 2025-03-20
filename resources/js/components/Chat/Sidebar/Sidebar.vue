@@ -21,10 +21,11 @@
 
 <script setup lang="ts">
 import { useRouter } from "vue-router";
-import { useChatStore, Chat } from "@/stores/chatStore";
+import { useChatStore } from "@/stores/chatStore";
 import ChatItem from "@/components/Chat/Sidebar/ChatItem.vue";
 import NewChatItem from "@/components/Chat/Sidebar/NewChatItem.vue";
 import UtilityPanel from "@/components/Chat/Sidebar/UtilityPanel.vue";
+import type { Chat } from "@/types/chat";
 
 const router = useRouter();
 const chatStore = useChatStore();

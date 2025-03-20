@@ -1,6 +1,6 @@
 import { createRouter, RouteRecordRaw, createWebHistory } from "vue-router";
 import { useUserStore } from "../stores/userStore";
-import { Chat, useChatStore } from "../stores/chatStore";
+import { useChatStore } from "../stores/chatStore";
 import { useAiServiceStore } from "@/stores/aiServiceStore";
 
 const routes: RouteRecordRaw[] = [

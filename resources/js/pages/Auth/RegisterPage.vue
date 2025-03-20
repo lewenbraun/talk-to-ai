@@ -71,7 +71,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { RegisterData, useUserStore } from "@/stores/userStore";
+import { useUserStore } from "@/stores/userStore";
+import type { RegisterData } from "@/types/user";
 
 const user = ref<RegisterData>({
   email: "",

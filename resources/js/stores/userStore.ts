@@ -1,29 +1,7 @@
 import { defineStore } from "pinia";
 import { api } from "@/boot/axios";
-
-export interface LoginData {
-  email: string;
-  password: string;
-}
-
-export interface RegisterData {
-  email: string;
-  password: string;
-  password_confirmation: string;
-}
-
-interface User {
-  id?: number;
-  email?: string;
-  is_temporary: boolean;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface UserState {
-  user: User;
-  token: string | null;
-}
+import { handleApiError } from "@/utils/errorHandler";
+import { LoginData, RegisterData, UserState, User } from "@/types/user";
 
 export const useUserStore = defineStore("userStore", {
   state: (): UserState => ({
@@ -37,30 +15,33 @@ export const useUserStore = defineStore("userStore", {
 
   actions: {
     async register(user: RegisterData): Promise<void> {
-      const { data } = await api.post("/api/register", user);
-      this.setUser(data.user);
-      this.setToken(data.token);
+      try {
+        const { data } = await api.post("/register", user);
+        this.setUser(data.user);
+        this.setToken(data.token);
+      } catch (error) {
+        handleApiError(error);
+      }
     },
     async login(user: LoginData): Promise<void> {
-      const { data } = await api.post("/api/login", user);
-      this.setUser(data.user);
-      this.setToken(data.token);
+      try {
+        const { data } = await api.post("/login", user);
+        this.setUser(data.user);
+        this.setToken(data.token);
+      } catch (error) {
+        handleApiError(error);
+      }
     },
     async logout(): Promise<void> {
-      await api.post("/api/logout");
-      this.logoutUser();
-    },
-    async updateUser(user: User): Promise<User> {
-      const { data } = await api.post("/api/user/update", user);
-      this.setUser(data);
-      return data;
-    },
-    async getUser(): Promise<void> {
-      const { data } = await api.get("/api/user");
-      this.setUser(data);
+      try {
+        await api.post("/logout");
+        this.logoutUser();
+      } catch (error) {
+        handleApiError(error);
+      }
     },
     async loadUser(): Promise<void> {
-      const { data } = await api.get("/api/user");
+      const { data } = await api.get("/user");
       this.setUser(data);
     },
     setUser(user: User): void {
@@ -83,9 +64,13 @@ export const useUserStore = defineStore("userStore", {
     },
     async createTemporaryUser(): Promise<void> {
       if (!this.isUserAuth()) {
-        const { data } = await api.post("/api/create-temporary-user");
-        this.setUser(data.user);
-        this.setToken(data.token);
+        try {
+          const { data } = await api.post("/create-temporary-user");
+          this.setUser(data.user);
+          this.setToken(data.token);
+        } catch (error) {
+          handleApiError(error);
+        }
       }
     },
   },
