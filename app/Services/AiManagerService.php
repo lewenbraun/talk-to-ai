@@ -11,62 +11,65 @@ use App\Enums\AiServiceEnum;
 use App\Models\UserSettingAiService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Exception;
+use Illuminate\Support\Facades\App;
 
 class AiManagerService
 {
+    private AiService $selectedAiService;
+
     private OllamaService $ollamaService;
 
-    public function __construct(OllamaService $ollamaService)
+    /**
+     * Initializes a new instance of the AiManagerService.
+     *
+     * This constructor sets the selected AI service and initializes the corresponding service client
+     * (e.g., OllamaService) with the API URL for the current user.
+     *
+     * @param AiService $selectedAiService The AI service to be managed.
+     * @param integer|null $userId Optional. The ID of the user. This is crucial for jobs queue
+     * where the authenticated user might not be directly available.
+     */
+    public function __construct(AiService $selectedAiService, ?int $userId = null)
     {
-        $this->ollamaService = $ollamaService;
+        $this->selectedAiService = $selectedAiService;
+        $apiUrl = $this->getApiUrlForAiService($selectedAiService->id, $userId);
+        $this->checkApiServiceUrl($apiUrl);
+
+        $this->ollamaService = new OllamaService($apiUrl);
     }
 
     public function redirectGenerateAnswer(Chat $chat): void
     {
-        $aiService = $chat->llm->aiService;
-
-        if (!$this->checkApiServiceHasUrl($aiService)) {
-            return;
-        }
-
-        match ($aiService->name) {
+        match ($this->selectedAiService->name) {
             AiServiceEnum::OLLAMA->value => $this->ollamaService->generateAnswer($chat),
         };
     }
 
-    public function redirectAddLLM(AiService $aiService, string $modelName): ?LLM
+    public function redirectAddLLM(string $modelName): ?LLM
     {
-        if (!$this->checkApiServiceHasUrl($aiService)) {
-            return null;
-        }
-
-        $model = match ($aiService->name) {
-            AiServiceEnum::OLLAMA->value => $this->ollamaService->addLLM($aiService->id, $modelName),
+        $model = match ($this->selectedAiService->name) {
+            AiServiceEnum::OLLAMA->value => $this->ollamaService->addLLM($modelName),
             default => null,
         };
 
         return $model;
     }
 
-    public function redirectDeleteLLM(AiService $aiService, LLM $llm): void
+    public function redirectDeleteLLM(LLM $llm): void
     {
-        if (!$this->checkApiServiceHasUrl($aiService)) {
-            return;
-        }
-
-        match ($aiService->name) {
+        match ($this->selectedAiService->name) {
             AiServiceEnum::OLLAMA->value => $this->ollamaService->deleteLLM($llm),
         };
     }
 
-    public function redirectListLLM(AiService $aiService): ?Collection
+    public function redirectListLLM(): ?Collection
     {
-        if (!$this->checkApiServiceHasUrl($aiService)) {
-            return null;
-        }
+        $this->updateListLLMs();
 
-        $llms = match ($aiService->name) {
-            AiServiceEnum::OLLAMA->value => $this->ollamaService->listLLM($aiService),
+        $llms = match ($this->selectedAiService->name) {
+            AiServiceEnum::OLLAMA->value => $this->ollamaService->listLLM(),
             default => null,
         };
 
@@ -74,49 +77,70 @@ class AiManagerService
     }
 
     /**
-     * Updates the list of available LLMs for Ollama if the service is configured.
+     * Updates the list of available LLMs for Ollama if the service is configured and available.
      *
+     * @throws Exception
      * @return void
      */
     public function updateListLLMs(): void
     {
-        $ollamaService = AiService::where('name', AiServiceEnum::OLLAMA->value)->first();
+        $this->ollamaService->updateListLLM();
+    }
 
-        if ($ollamaService && $this->checkApiServiceHasUrl($ollamaService)) {
-            $this->ollamaService->updateListLLM();
+    /**
+     * Checks the availability of the API URL for a specific AI service.
+     *
+     * @param AiService $aiService
+     * @throws Exception
+     * @return bool Returns true if the URL is available, throws exception otherwise.
+     */
+    public function checkApiServiceUrl(string $apiUrl): bool
+    {
+        if ($apiUrl) {
+            try {
+                $response = Http::timeout(5)->get($apiUrl);
+
+                if (!$response->successful()) {
+                    throw new Exception(__('errors.api_error', [
+                        'url' => $apiUrl,
+                        'service' => $this->selectedAiService->name,
+                        'status' => $response->status(),
+                    ]));
+                }
+                return true;
+            } catch (\Illuminate\Http\Client\ConnectionException $e) {
+                throw new Exception(__('errors.connection_error', [
+                    'url' => $apiUrl,
+                    'service' => $this->selectedAiService->name,
+                ]));
+            }
         } else {
-            return;
+            throw new Exception(__('errors.url_not_configured', [
+                'service' => $this->selectedAiService->name,
+            ]));
         }
     }
 
     /**
-     * Checks if the AI service has a configured API URL for the current user.
+     * Retrieves the API URL for the given AI service ID for the current user.
      *
-     * @param AiService $aiService
-     * @param int|null $userId
-     * @return bool
+     * @param integer $aiServiceId
+     * @param integer|null $userId // userId is required for the jobs queue.
+     * @return string|null
      */
-    private function checkApiServiceHasUrl(AiService $aiService): bool
+    private function getApiUrlForAiService(int $aiServiceId, ?int $userId = null): ?string
     {
-        return match ($aiService->name) {
-            AiServiceEnum::OLLAMA->value => $this->hasApiUrlConfigured($aiService->id),
-            default => false,
-        };
-    }
+        $userId = $userId ?? auth()->id();
 
-    /**
-     * Checks if the AI service with the given ID has an API URL configured for the specified user.
-     *
-     * @param int $aiServiceId
-     * @param int $userId
-     * @return bool
-     */
-    private function hasApiUrlConfigured(int $aiServiceId): bool
-    {
-        $userSetting = UserSettingAiService::where('user_id', auth()->id())
+        if (!$userId) {
+            return null;
+        }
+
+        $userSetting = UserSettingAiService::where('user_id', $userId)
             ->where('ai_service_id', $aiServiceId)
             ->first();
 
-        return $userSetting && $userSetting->url_api !== null;
+        return $userSetting ? $userSetting->url_api : null;
     }
+
 }

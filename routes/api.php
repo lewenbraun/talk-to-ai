@@ -25,7 +25,6 @@ Route::middleware('auth:sanctum')->prefix('ai-service')->group(function () {
     Route::get('/list', [AiServiceController::class, 'list']);
     Route::get('/llm/list/{aiService}', [LLMController::class, 'listByAiService']);
     Route::post('/llm/add', [LLMController::class, 'add']);
-    Route::post('/llm/update', [LLMController::class, 'update']);
     Route::post('/llm/delete', [LLMController::class, 'delete']);
     Route::post('/api-key/set', [UserSettingAiServiceController::class, 'setApiKey']);
     Route::post('/api-url/set', [UserSettingAiServiceController::class, 'setApiUrl']);

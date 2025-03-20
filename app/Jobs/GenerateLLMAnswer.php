@@ -35,11 +35,15 @@ class GenerateLLMAnswer implements ShouldQueue
     /**
      * Execute the job.
      *
-     * @param AiManagerService $llmService
      * @return void
      */
-    public function handle(AiManagerService $llmService): void
+    public function handle(): void
     {
-        $llmService->redirectGenerateAnswer($this->chat);
+        $aiService = $this->chat->llm->aiService;
+        $userId = $this->chat->user->id;
+
+        $aiManager = new AiManagerService($aiService, $userId);
+
+        $aiManager->redirectGenerateAnswer($this->chat);
     }
 }

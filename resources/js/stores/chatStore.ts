@@ -75,17 +75,17 @@ export const useChatStore = defineStore("chatStore", {
       }
     },
     async createChat(llm: LLM): Promise<Chat> {
-      const newChatResoponse = await api.post("/api/chat/create", {
+      const newChatResponse = await api.post("/api/chat/create", {
         llm_id: llm.id,
       });
 
-      const data = newChatResoponse.data;
+      const chat = newChatResponse.data;
 
       const newChat: Chat = {
-        id: data.chat.id,
+        id: chat.id,
         llm: llm,
         name: "New chat",
-        created_at: data.chat.created_at,
+        created_at: chat.created_at,
       };
 
       return newChat;
@@ -109,7 +109,7 @@ export const useChatStore = defineStore("chatStore", {
         let addedMessage = this.messagesByChat[chat_id]?.find(
           (item) => item === message
         );
-        if (addedMessage) addedMessage.id = data.message.id;
+        if (addedMessage) addedMessage.id = data.id;
       } catch (error) {
         console.error("Error sending message in existing chat:", error);
         this.isGeneratingAnswer = false;

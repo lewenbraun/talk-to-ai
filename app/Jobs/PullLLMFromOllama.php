@@ -21,25 +21,28 @@ class PullLLMFromOllama implements ShouldQueue
     use SerializesModels;
 
     public LLM $llm;
+    private string $ollamaApiUrl;
 
     /**
      * Create a new job instance.
      *
      * @param LLM $llm
+     * @param string $ollamaApiUrl
      */
-    public function __construct(LLM $llm)
+    public function __construct(LLM $llm, string $ollamaApiUrl)
     {
         $this->llm = $llm;
+        $this->ollamaApiUrl = $ollamaApiUrl;
     }
 
     /**
      * Execute the job.
      *
-     * @param OllamaService $ollamaService
      * @return void
      */
-    public function handle(OllamaService $ollamaService): void
+    public function handle(): void
     {
+        $ollamaService = new OllamaService($this->ollamaApiUrl);
         $ollamaService->pullLLM($this->llm);
     }
 }

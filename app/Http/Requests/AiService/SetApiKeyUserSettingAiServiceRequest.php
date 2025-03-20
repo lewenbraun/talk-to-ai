@@ -24,8 +24,8 @@ class SetApiKeyUserSettingAiServiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ai_service_id' => ['required', 'integer', 'exists:ai_services,id'],
-            'api_key' => ['required', 'string'],
+            'ai_service_id' => 'required|integer|exists:ai_services,id',
+            'api_key' => 'required|string',
         ];
     }
 }

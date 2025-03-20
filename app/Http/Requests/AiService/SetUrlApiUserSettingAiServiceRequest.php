@@ -24,8 +24,8 @@ class SetUrlApiUserSettingAiServiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ai_service_id' => ['required', 'integer', 'exists:ai_services,id'],
-            'url_api' => ['required', 'string'],
+            'ai_service_id' => 'required|integer|exists:ai_services,id',
+            'url_api' => 'required|string',
         ];
     }
 }

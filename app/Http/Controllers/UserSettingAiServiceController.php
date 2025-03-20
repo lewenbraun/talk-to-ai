@@ -9,13 +9,14 @@ use Illuminate\Http\JsonResponse;
 use App\Models\UserSettingAiService;
 use App\Http\Requests\AiService\SetUrlApiUserSettingAiServiceRequest;
 use App\Http\Requests\AiService\SetApiKeyUserSettingAiServiceRequest;
+use Throwable;
 
 class UserSettingAiServiceController extends Controller
 {
     public function setApiKey(SetApiKeyUserSettingAiServiceRequest $request): JsonResponse
     {
         $aiServiceId = $request->input('ai_service_id');
-        $apiUrl = $request->input('api_key');
+        $apiKey = $request->input('api_key');
 
         UserSettingAiService::createOrUpdate(
             [
@@ -23,7 +24,7 @@ class UserSettingAiServiceController extends Controller
                 'ai_service_id' => $aiServiceId,
             ],
             [
-                'api_key' => $apiUrl
+                'api_key' => $apiKey
             ]
         );
 
