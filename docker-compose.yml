@@ -26,7 +26,7 @@ services:
     container_name: tta-nginx-backend
     restart: unless-stopped
     ports:
-      - "8000:80"
+      - "80:80"
     volumes:
       - .:/var/www
       - ./.docker/nginx:/etc/nginx/conf.d
@@ -55,6 +55,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+      
   # Frontend dev mode
   tta-frontend-dev:
     build:
@@ -66,8 +67,19 @@ services:
       - /app/node_modules
     restart: unless-stopped
     ports:
-      - "80:9000"
-      - "5173:5173"
+      - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+    networks:
+      - tta-network
+
+  # Redis
+  tta-redis:
+    image: redis:alpine
+    container_name: tta-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - tta-redis-data:/data
     networks:
       - tta-network
 
@@ -81,4 +93,6 @@ networks:
 
 volumes:
   tta-db-data:
+    driver: local
+  tta-redis-data:
     driver: local
