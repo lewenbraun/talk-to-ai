@@ -82,7 +82,7 @@ export const useAiServiceStore = defineStore("aiServiceStore", {
       try {
         const service = this.aiServices.find((s) => s.id === ai_service_id);
         if (service) {
-          const response = await api.post(`/ai-service-url/set`, {
+          const response = await api.post(`/ai-service/url-api/set`, {
             ai_service_id: ai_service_id,
             url_api: new_url,
           });
