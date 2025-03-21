@@ -3,17 +3,15 @@ services:
   tta-backend:
     build:
       context: .
-      dockerfile: .docker/php/dev.Dockerfile
+      dockerfile: .docker/php/prod.Dockerfile
+    image: tta-backend-image
     container_name: tta-backend
     restart: unless-stopped
     tty: true
-    environment:
-      - no_proxy=.tta-backend
     working_dir: /var/www
     ports:
       - "8080:8080"
     volumes:
-      - .:/var/www
       - .docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
       - tta-network
@@ -22,14 +20,13 @@ services:
 
   # Backend Nginx (serving Laravel)
   tta-nginx-backend:
-    image: nginx:stable-alpine
+    build:
+      context: .
+      dockerfile: .docker/nginx/dockerfile/prod.Dockerfile
     container_name: tta-nginx-backend
     restart: unless-stopped
     ports:
       - "80:80"
-    volumes:
-      - .:/var/www
-      - ./.docker/nginx:/etc/nginx/conf.d
     networks:
       - tta-network
     depends_on:
@@ -55,21 +52,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
-  # Frontend dev mode
-  tta-frontend-dev:
-    build:
-      context: .
-      dockerfile: .docker/frontend/dev.Dockerfile
-    container_name: tta-frontend-dev
-    volumes:
-      - .:/app
-      - /app/node_modules
-    restart: unless-stopped
-    ports:
-      - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
-    networks:
-      - tta-network
 
   # Redis
   tta-redis:

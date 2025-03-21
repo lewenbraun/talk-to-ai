@@ -12,9 +12,13 @@ RUN apk add --no-cache --virtual .build-deps \
     zip \
     unzip \
     git \
+    php-redis \
+    supervisor \
     && docker-php-ext-install pdo pdo_pgsql opcache pcntl
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+COPY .docker/supervisor/laravel-worker.conf /etc/supervisor/laravel-worker.conf
 
 COPY composer.* ./
 RUN composer install --no-dev --no-scripts --no-autoloader
@@ -28,4 +32,4 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
 COPY .docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
 
 EXPOSE 9000
-CMD ["php-fpm"]
+CMD ["supervisord", "-c", "/etc/supervisor/laravel-worker.conf", "-n"]

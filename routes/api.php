@@ -27,7 +27,7 @@ Route::middleware('auth:sanctum')->prefix('ai-service')->group(function () {
     Route::post('/llm/add', [LLMController::class, 'add']);
     Route::post('/llm/delete', [LLMController::class, 'delete']);
     Route::post('/api-key/set', [UserSettingAiServiceController::class, 'setApiKey']);
-    Route::post('/api-url/set', [UserSettingAiServiceController::class, 'setApiUrl']);
+    Route::post('/url-api/set', [UserSettingAiServiceController::class, 'setApiUrl']);
 });
 
 Route::middleware('optional_auth')->group(function () {
