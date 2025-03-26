@@ -19,13 +19,15 @@ RUN apk add --no-cache --virtual .build-deps \
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-COPY .docker/supervisor/laravel-worker.conf /etc/supervisor/laravel-worker.conf
+COPY .docker/supervisor/laravel-worker.conf /etc/supervisor/conf.d/laravel-worker.conf
 
-COPY composer.* ./
+COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader
 
 COPY . .
 RUN composer dump-autoload --optimize
+
+RUN chown -R www-data:www-data /var/www
 
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
     && chmod -R ug+rwx /var/www/storage /var/www/bootstrap/cache
@@ -41,4 +43,7 @@ RUN rm -rf public/build/* public/manifest.json
 RUN npm run build
 
 EXPOSE 9000
-CMD ["supervisord", "-c", "/etc/supervisor/laravel-worker.conf", "-n"]
+
+USER www-data
+
+CMD ["supervisord", "-c", "/etc/supervisor/conf.d/laravel-worker.conf", "-n"]
