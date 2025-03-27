@@ -15,6 +15,9 @@ services:
     volumes:
       - .:/var/www
       - .docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - node_modules:/var/www/node_modules
+      - vendor:/var/www/vendor
+      - storage_data:/var/www/storage
     networks:
       - tta-network
     depends_on:
@@ -95,4 +98,10 @@ volumes:
   tta-db-data:
     driver: local
   tta-redis-data:
+    driver: local
+  vendor:
+    driver: local
+  node_modules:
+    driver: local
+  storage_data:
     driver: local
