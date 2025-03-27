@@ -42,7 +42,7 @@ Follow these steps to deploy Talk to Ai:
    Launch the application using Docker Compose:
 
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 4. **Generate Application Key**
@@ -50,7 +50,7 @@ Follow these steps to deploy Talk to Ai:
    Generate the Laravel application key:
 
    ```bash
-   docker-compose exec tta-backend php artisan key:generate
+   docker compose exec tta-backend php artisan key:generate
    ```
 
 5. **Run Migrations**
@@ -58,20 +58,20 @@ Follow these steps to deploy Talk to Ai:
    Initialize the database schema with:
 
    ```bash
-   docker-compose exec tta-backend php artisan migrate
+   docker compose exec tta-backend php artisan migrate
    ```
 
 ## Usage
 
 ### Setup
 
-Go to the settings page to specify the Ollama server address (if the app and ollama are deployed locally: `localhost:11434`), then go to the "LLMs" section to update the models.
+Go to the settings page to specify the Ollama server address (if the app and ollama are deployed locally, the host will be `localhost:11434`), then go to the "LLMs" section to update the models.
 
 ![Setup](assets/setup.gif)
 
 ### Chatting
 
-After completing the setup, begin chatting with LLM through the chat interface.
+After setup is complete, you can communicate with LLM via the chat interface.
 
 ![Chatting](assets/chatting.gif)
 
