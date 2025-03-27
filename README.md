@@ -1,66 +1,94 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Talk to Ai
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Talk to Ai is a web application designed to facilitate chatting with various LLMs. Currently, the application supports integration with Ollama, enabling users to add, remove, and interact with different models through a user-friendly interface. Built with Laravel and Vue.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Multi-Model Chat Interface**  
+  Interact with neural networks such as Ollama. Future updates may extend support to additional models.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Flexible Model Management**  
+  Easily add or remove models in the Ollama integration via the LLMs section.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Customizable Server Settings**  
+  Specify the server address for your Ollama installation (default for local installations: `localhost:11434`).
 
-## Learning Laravel
+- **Dockerized Deployment**  
+  Everything is containerized with Docker for consistent setup and deployment.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Installation & Deployment
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Follow these steps to deploy Talk to Ai:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. **Clone the Repository**
 
-## Laravel Sponsors
+   ```bash
+   git clone https://github.com/lewenbraun/talk-to-ai.git
+   cd talk-to-ai
+   ```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+2. **Configure Environment**
 
-### Premium Partners
+   - Copy the sample environment file:
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+     ```bash
+     cp .env.example .env
+     ```
+
+   - Update your `.env` file if necessary.
+
+3. **Start Docker Containers**
+
+   Launch the application using Docker Compose:
+
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Generate Application Key**
+
+   Generate the Laravel application key:
+
+   ```bash
+   docker-compose exec tta-backend php artisan key:generate
+   ```
+
+5. **Run Migrations**
+
+   Initialize the database schema with:
+
+   ```bash
+   docker-compose exec tta-backend php artisan migrate
+   ```
+
+## Usage
+
+### Setup
+
+Go to the settings page to specify the Ollama server address (if the app and ollama are deployed locally: `localhost:11434`), then go to the "LLMs" section to update the models.
+
+![Setup](assets/setup.gif)
+
+### Chatting
+
+After completing the setup, begin chatting with LLM through the chat interface.
+
+![Chatting](assets/chatting.gif)
+
+## Technologies Used
+
+- **Laravel:** For the backend.
+- **Vue:** For the frontend embedded in Laravel.
+- **Tailwind:** For rapid frontend development.
+- **Docker:** Containerizes the application for consistent deployment across environments.
+- **Supervisor:** Manages the web server, queue workers, and Reverb server processes.
+- **Laravel Reverb:** For WebSockets.
+- **Redis:** For Laravel Queues.
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Contributions, issues, and feature requests are welcome. Please check the issues page for more details.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is licensed under the MIT License.
