@@ -32,7 +32,7 @@ services:
       - "80:80"
     volumes:
       - .:/var/www
-      - ./.docker/nginx:/etc/nginx/conf.d
+      - ./.docker/nginx/dev:/etc/nginx/conf.d
     networks:
       - tta-network
     depends_on:
