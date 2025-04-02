@@ -22,10 +22,17 @@ services:
   tta-nginx-backend:
     build:
       context: .
-      dockerfile: .docker/nginx/dockerfile/prod.Dockerfile
+      dockerfile: .docker/nginx/prod/Dockerfile
     container_name: tta-nginx-backend
     restart: unless-stopped
+    environment:
+      DOMAIN: ${APP_URL}
+      EMAIL: ${EMAIL}
+    volumes:
+      - certs:/etc/letsencrypt
+      - acme:/var/www/acme
     ports:
+      - "443:443"
       - "80:80"
     networks:
       - tta-network
@@ -73,3 +80,5 @@ volumes:
     driver: local
   tta-redis-data:
     driver: local
+  certs:
+  acme:
