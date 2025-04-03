@@ -50,7 +50,7 @@ class ChatController extends Controller
     {
         $chat = Chat::create([
             'user_id' => auth()->id(),
-            'llm_id' => $request->input('llm_id'),
+            'llm_id' => $request->integer('llm_id'),
             'name' => 'New chat',
         ]);
 
@@ -60,12 +60,12 @@ class ChatController extends Controller
     public function sendMessage(SendMessageInExistingChatRequest $request): JsonResponse
     {
         $content = $request->input('content');
-        $chatId = $request->input('chat_id');
+        $chatId = $request->integer('chat_id');
 
         try {
             $chat = Chat::findOrFail($chatId);
-            $message = $this->chatService->sendMessage($content, RoleEnum::USER, $chat);
-            GenerateLLMAnswer::dispatch($chat, $message);
+            $message = $this->chatService->createMessage($content, RoleEnum::USER, $chat);
+            GenerateLLMAnswer::dispatch($chat);
 
             return response()->json(new MessageResource($message));
         } catch (Throwable $e) {

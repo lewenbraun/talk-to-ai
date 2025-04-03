@@ -10,8 +10,6 @@ use App\Models\AiService;
 use App\Models\LLM;
 use App\Services\AiManagerService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Throwable;
 
 class LLMController extends Controller
 {
@@ -25,8 +23,8 @@ class LLMController extends Controller
 
     public function add(AddLLMRequest $request): JsonResponse
     {
-        $llmName = $request->input('llm_name');
-        $aiServiceId = $request->input('ai_service_id');
+        $llmName = $request->input('llm_name')->trim();
+        $aiServiceId = $request->integer('ai_service_id');
 
         $aiService = AiService::findOrFail($aiServiceId);
         $aiManager = new AiManagerService($aiService);
@@ -38,10 +36,11 @@ class LLMController extends Controller
 
     public function delete(DeleteLLMRequest $request): JsonResponse
     {
-        $llmId = $request->input('llm_id');
-        $aiServiceId = $request->input('ai_service_id');
+        $llmId = $request->integer('llm_id');
+        $aiServiceId = $request->integer('ai_service_id');
 
         $llm = LLM::findOrFail($llmId);
+
         $aiService = AiService::findOrFail($aiServiceId);
 
         $aiManager = new AiManagerService($aiService);

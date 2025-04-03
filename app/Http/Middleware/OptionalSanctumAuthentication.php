@@ -8,6 +8,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\PersonalAccessToken;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Symfony\Component\HttpFoundation\Response;
 
 class OptionalSanctumAuthentication
@@ -24,11 +25,16 @@ class OptionalSanctumAuthentication
         if ($tokenValue) {
             $personalAccessToken = PersonalAccessToken::findToken($tokenValue);
 
-            if ($personalAccessToken && ($personalAccessToken->expires_at === null || $personalAccessToken->isValid)) {
-                Auth::setUser($personalAccessToken->tokenable);
-                \Log::info('OptionalAuth: User set');
+            if ($personalAccessToken && ($personalAccessToken->expires_at === null || now()->lessThan($personalAccessToken->expires_at))) {
+                $tokenable = $personalAccessToken->tokenable;
+                if ($tokenable instanceof Authenticatable) {
+                    Auth::setUser($tokenable);
+                    \Log::info('OptionalAuth: User set');
+                } else {
+                    \Log::warning('OptionalAuth: Tokenable is not authenticatable');
+                }
             } elseif ($personalAccessToken) {
-                \Log::warning('OptionalAuth: Token is invalid');
+                \Log::warning('OptionalAuth: Token is invalid or expired');
             } else {
                 \Log::warning('OptionalAuth: Token not found');
             }

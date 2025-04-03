@@ -6,12 +6,12 @@ use Rector\Config\RectorConfig;
 use Rector\ValueObject\PhpVersion;
 use Rector\Set\ValueObject\SetList;
 use RectorLaravel\Set\LaravelSetList;
-use RectorLaravel\Set\LaravelLevelSetList;
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
-use Rector\CodeQuality\Rector\FuncCall\CompactToVariablesRector;
-use Rector\PHPUnit\Set\PHPUnitSetList;
-use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
 use Rector\CodeQuality\Rector\If_\SimplifyIfReturnBoolRector;
+use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
+use Rector\CodeQuality\Rector\FuncCall\CompactToVariablesRector;
+use RectorLaravel\Rector\Class_\AddExtendsAnnotationToModelFactoriesRector;
+use RectorLaravel\Rector\ClassMethod\AddGenericReturnTypeToRelationsRector;
 use Rector\TypeDeclaration\Rector\ClassMethod\AddReturnTypeDeclarationRector;
 use Rector\CodeQuality\Rector\Class_\InlineConstructorDefaultToPropertyRector;
 
@@ -54,5 +54,7 @@ return static function (RectorConfig $rectorConfig): void {
         SimplifyIfReturnBoolRector::class,
         AddReturnTypeDeclarationRector::class,
         InlineConstructorDefaultToPropertyRector::class,
+        AddGenericReturnTypeToRelationsRector::class,
+        AddExtendsAnnotationToModelFactoriesRector::class,
     ]);
 };

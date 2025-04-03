@@ -11,6 +11,9 @@ class UserSettingAiService extends Model
 {
     protected $guarded = [];
 
+    /**
+     * @return BelongsTo<AiService, $this>
+     */
     public function aiService(): BelongsTo
     {
         return $this->belongsTo(AiService::class);

@@ -13,11 +13,17 @@ class AiService extends Model
 {
     protected $guarded = [];
 
+    /**
+     * @return HasMany<LLM, $this>
+     */
     public function llms(): HasMany
     {
         return $this->hasMany(LLM::class);
     }
 
+    /**
+     * @return BelongsToMany<User, $this>
+     */
     public function userSettings(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_setting_ai_services')

@@ -14,11 +14,17 @@ class LLM extends Model
     protected $table = 'llms';
     protected $guarded = [];
 
+    /**
+     * @return BelongsTo<AiService, $this>
+     */
     public function aiService(): BelongsTo
     {
         return $this->belongsTo(AiService::class);
     }
 
+    /**
+     * @return HasMany<Chat, $this>
+     */
     public function chats(): HasMany
     {
         return $this->hasMany(Chat::class);
