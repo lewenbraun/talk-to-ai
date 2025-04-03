@@ -11,12 +11,10 @@ class MessageService
 {
     public static function formatMessageForChat(Collection $messages): array
     {
-        $formattedMessages = $messages->map(function (Message $message) {
-            return [
-                'content' => $message->content,
-                'role' => $message->role,
-            ];
-        })->toArray();
+        $formattedMessages = $messages->map(fn(Message $message): array => [
+            'content' => $message->content,
+            'role' => $message->role,
+        ])->toArray();
 
         return $formattedMessages;
     }

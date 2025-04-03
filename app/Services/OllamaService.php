@@ -134,7 +134,7 @@ class OllamaService implements AiServiceContract
         $diff = $this->getModelDiff($ollamaModelNames, $dbModelNames);
 
         if (!empty($diff['newModels'])) {
-            $this->addNewModels($diff['newModels'], $this->ollama_id);
+            $this->addNewModels($diff['newModels']);
         }
 
         if (!empty($diff['modelsForUpdateIsLoaded'])) {

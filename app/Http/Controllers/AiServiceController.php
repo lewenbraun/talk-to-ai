@@ -15,7 +15,7 @@ class AiServiceController extends Controller
 {
     public function list(): JsonResponse
     {
-        $aiServiceList = AiService::with(['llms' => function ($query) {
+        $aiServiceList = AiService::with(['llms' => function ($query): void {
             $query->where('user_id', auth()->id());
         }, 'userSettings'])->get();
 

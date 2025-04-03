@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use Illuminate\Http\Client\ConnectionException;
 use App\Models\LLM;
 use App\Models\Chat;
 use App\Models\AiService;
@@ -96,7 +97,7 @@ class AiManagerService
      */
     public function checkApiServiceUrl(string $apiUrl): bool
     {
-        if ($apiUrl) {
+        if ($apiUrl !== '' && $apiUrl !== '0') {
             try {
                 $response = Http::timeout(5)->get($apiUrl);
 
@@ -108,11 +109,11 @@ class AiManagerService
                     ]));
                 }
                 return true;
-            } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            } catch (ConnectionException $e) {
                 throw new Exception(__('errors.connection_error', [
                     'url' => $apiUrl,
                     'service' => $this->selectedAiService->name,
-                ]));
+                ]), $e->getCode(), $e);
             }
         } else {
             throw new Exception(__('errors.url_not_configured', [

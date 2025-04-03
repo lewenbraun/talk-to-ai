@@ -43,7 +43,7 @@ class LLMChunkGenerated implements ShouldBroadcast
         ];
     }
 
-    public function broadcastAs()
+    public function broadcastAs(): string
     {
         return 'llm.chunk.generated';
     }
