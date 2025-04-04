@@ -23,7 +23,7 @@ class LLMController extends Controller
 
     public function add(AddLLMRequest $request): JsonResponse
     {
-        $llmName = $request->input('llm_name')->trim();
+        $llmName = $request->input('llm_name');
         $aiServiceId = $request->integer('ai_service_id');
 
         $aiService = AiService::findOrFail($aiServiceId);

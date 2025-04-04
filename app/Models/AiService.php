@@ -5,12 +5,17 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\LLM;
+use Database\Factories\ChatFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class AiService extends Model
 {
+    /** @use HasFactory<ChatFactory> */
+    use HasFactory;
+
     protected $guarded = [];
 
     /**

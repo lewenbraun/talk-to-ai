@@ -76,12 +76,6 @@ class AiManagerService
         };
     }
 
-    /**
-     * Updates the list of available LLMs for Ollama if the service is configured and available.
-     *
-     * @throws Exception
-     * @return void
-     */
     public function updateListLLMs(): void
     {
         $this->ollamaService->updateListLLM();
@@ -100,7 +94,7 @@ class AiManagerService
             $response = Http::timeout(5)->get($apiUrl);
 
             if (!$response->successful()) {
-                throw new Exception(__('exceptions.api_error', [
+                throw new Exception(__('errors.api_error', [
                     'url' => $apiUrl,
                     'service' => $this->selectedAiService->name,
                     'status' => $response->status(),
@@ -109,7 +103,7 @@ class AiManagerService
 
             return true;
         } catch (ConnectionException $e) {
-            throw new Exception(__('exceptions.connection_error', [
+            throw new Exception(__('errors.connection_error', [
                 'url' => $apiUrl,
                 'service' => $this->selectedAiService->name,
             ]), $e->getCode(), $e);
@@ -129,7 +123,7 @@ class AiManagerService
         $userId = $userId ?? auth()->id();
 
         if (!$userId) {
-            throw new Exception(__('exceptions.no_user_id', [
+            throw new Exception(__('errors.no_user_id', [
                 'service' => $this->selectedAiService->name,
             ]));
         }
@@ -141,7 +135,7 @@ class AiManagerService
         if ($userSetting && $userSetting->url_api) {
             $this->checkApiServiceUrl($userSetting->url_api);
         } else {
-            throw new Exception(__('exceptions.url_not_configured', [
+            throw new Exception(__('errors.url_not_configured', [
                 'service' => $this->selectedAiService->name,
             ]));
         }
