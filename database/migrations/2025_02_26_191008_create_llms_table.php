@@ -14,7 +14,7 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::create('llms', function (Blueprint $table) {
+        Schema::create('llms', function (Blueprint $table): void {
             $table->id();
             $table->foreignIdFor(User::class);
             $table->foreignIdFor(AiService::class);

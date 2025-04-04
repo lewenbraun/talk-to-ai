@@ -14,7 +14,7 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::create('ai_services', function (Blueprint $table) {
+        Schema::create('ai_services', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
             $table->timestamps();

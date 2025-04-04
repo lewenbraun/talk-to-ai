@@ -34,7 +34,7 @@ class LLMChunkGenerated implements ShouldBroadcast
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return Channel|array
+     * @return array<Channel>
      */
     public function broadcastOn()
     {
@@ -43,7 +43,7 @@ class LLMChunkGenerated implements ShouldBroadcast
         ];
     }
 
-    public function broadcastAs()
+    public function broadcastAs(): string
     {
         return 'llm.chunk.generated';
     }

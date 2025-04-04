@@ -5,19 +5,30 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\LLM;
+use Database\Factories\ChatFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class AiService extends Model
 {
+    /** @use HasFactory<ChatFactory> */
+    use HasFactory;
+
     protected $guarded = [];
 
+    /**
+     * @return HasMany<LLM, $this>
+     */
     public function llms(): HasMany
     {
         return $this->hasMany(LLM::class);
     }
 
+    /**
+     * @return BelongsToMany<User, $this>
+     */
     public function userSettings(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_setting_ai_services')

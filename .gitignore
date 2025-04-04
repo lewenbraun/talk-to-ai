@@ -5,12 +5,14 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/rector
 /vendor
 .env
 .env.backup
 .env.production
 .phpactor.json
 .phpunit.result.cache
+_ide_helper.php
 supervisord.log
 supervisord.pid
 Homestead.json

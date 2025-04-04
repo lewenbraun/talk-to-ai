@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use Illuminate\Http\Client\ConnectionException;
 use App\Models\LLM;
 use App\Models\Chat;
 use App\Models\AiService;
@@ -13,12 +14,10 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Exception;
-use Illuminate\Support\Facades\App;
 
 class AiManagerService
 {
     private AiService $selectedAiService;
-
     private OllamaService $ollamaService;
 
     /**
@@ -28,15 +27,15 @@ class AiManagerService
      * (e.g., OllamaService) with the API URL for the current user.
      *
      * @param AiService $selectedAiService The AI service to be managed.
-     * @param integer|null $userId Optional. The ID of the user. This is crucial for jobs queue
+     * @param int|null $userId Optional. The ID of the user. This is crucial for jobs queue
      * where the authenticated user might not be directly available.
+     *
+     * @throws Exception if API URL is not configured or not reachable.
      */
     public function __construct(AiService $selectedAiService, ?int $userId = null)
     {
         $this->selectedAiService = $selectedAiService;
         $apiUrl = $this->getApiUrlForAiService($selectedAiService->id, $userId);
-        $this->checkApiServiceUrl($apiUrl);
-
         $this->ollamaService = new OllamaService($apiUrl);
     }
 
@@ -44,44 +43,39 @@ class AiManagerService
     {
         match ($this->selectedAiService->name) {
             AiServiceEnum::OLLAMA->value => $this->ollamaService->generateAnswer($chat),
+            default => throw new Exception(__('errors.unsupported_ai_service', ['service' => $this->selectedAiService->name])),
         };
     }
 
     public function redirectAddLLM(string $modelName): ?LLM
     {
-        $model = match ($this->selectedAiService->name) {
+        return match ($this->selectedAiService->name) {
             AiServiceEnum::OLLAMA->value => $this->ollamaService->addLLM($modelName),
             default => null,
         };
-
-        return $model;
     }
 
     public function redirectDeleteLLM(LLM $llm): void
     {
         match ($this->selectedAiService->name) {
             AiServiceEnum::OLLAMA->value => $this->ollamaService->deleteLLM($llm),
+            default => throw new Exception(__('errors.unsupported_ai_service', ['service' => $this->selectedAiService->name])),
         };
     }
 
+    /**
+     * @return Collection<int, LLM>|null
+     */
     public function redirectListLLM(): ?Collection
     {
         $this->updateListLLMs();
 
-        $llms = match ($this->selectedAiService->name) {
+        return match ($this->selectedAiService->name) {
             AiServiceEnum::OLLAMA->value => $this->ollamaService->listLLM(),
             default => null,
         };
-
-        return $llms;
     }
 
-    /**
-     * Updates the list of available LLMs for Ollama if the service is configured and available.
-     *
-     * @throws Exception
-     * @return void
-     */
     public function updateListLLMs(): void
     {
         $this->ollamaService->updateListLLM();
@@ -90,57 +84,62 @@ class AiManagerService
     /**
      * Checks the availability of the API URL for a specific AI service.
      *
-     * @param AiService $aiService
+     * @param string $apiUrl
      * @throws Exception
      * @return bool Returns true if the URL is available, throws exception otherwise.
      */
     public function checkApiServiceUrl(string $apiUrl): bool
     {
-        if ($apiUrl) {
-            try {
-                $response = Http::timeout(5)->get($apiUrl);
+        try {
+            $response = Http::timeout(5)->get($apiUrl);
 
-                if (!$response->successful()) {
-                    throw new Exception(__('errors.api_error', [
-                        'url' => $apiUrl,
-                        'service' => $this->selectedAiService->name,
-                        'status' => $response->status(),
-                    ]));
-                }
-                return true;
-            } catch (\Illuminate\Http\Client\ConnectionException $e) {
-                throw new Exception(__('errors.connection_error', [
+            if (!$response->successful()) {
+                throw new Exception(__('errors.api_error', [
                     'url' => $apiUrl,
                     'service' => $this->selectedAiService->name,
+                    'status' => $response->status(),
                 ]));
             }
-        } else {
-            throw new Exception(__('errors.url_not_configured', [
+
+            return true;
+        } catch (ConnectionException $e) {
+            throw new Exception(__('errors.connection_error', [
+                'url' => $apiUrl,
                 'service' => $this->selectedAiService->name,
-            ]));
+            ]), $e->getCode(), $e);
         }
     }
 
     /**
      * Retrieves the API URL for the given AI service ID for the current user.
      *
-     * @param integer $aiServiceId
-     * @param integer|null $userId // userId is required for the jobs queue.
-     * @return string|null
+     * @param int $aiServiceId
+     * @param int|null $userId // userId is required for the jobs queue.
+     * @return string
+     * @throws Exception
      */
-    private function getApiUrlForAiService(int $aiServiceId, ?int $userId = null): ?string
+    private function getApiUrlForAiService(int $aiServiceId, ?int $userId = null): string
     {
         $userId = $userId ?? auth()->id();
 
         if (!$userId) {
-            return null;
+            throw new Exception(__('errors.no_user_id', [
+                'service' => $this->selectedAiService->name,
+            ]));
         }
 
         $userSetting = UserSettingAiService::where('user_id', $userId)
             ->where('ai_service_id', $aiServiceId)
             ->first();
 
-        return $userSetting ? $userSetting->url_api : null;
-    }
+        if ($userSetting && $userSetting->url_api) {
+            $this->checkApiServiceUrl($userSetting->url_api);
+        } else {
+            throw new Exception(__('errors.url_not_configured', [
+                'service' => $this->selectedAiService->name,
+            ]));
+        }
 
+        return $userSetting->url_api;
+    }
 }

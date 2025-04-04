@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
-use Illuminate\Http\Response;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Routing\ResponseFactory;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 
@@ -18,11 +16,17 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         $user = auth()->user();
-        
+
+        if (!$user || !$user->is_temporary) {
+            return response()->json([
+                'error' => __('errors.no_temporary_user'),
+            ], 403);
+        }
+
         $user->update([
             'email' => $request['email'],
-            'password' => bcrypt($request['password']),
-            'is_temporary'  => false,
+            'password' => bcrypt((string) $request['password']),
+            'is_temporary' => false,
         ]);
 
         $token = $user->createToken('main')->plainTextToken;
@@ -36,12 +40,18 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         if (!Auth::attempt($request->toArray())) {
-            return response([
-                'error' => 'The Provided credentials are not correct',
+            return response()->json([
+                'error' => __('errors.invalid_credentials'),
             ], 422);
         }
 
         $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'error' => __('errors.authentication_failed'),
+            ], 401);
+        }
 
         $token = $user->createToken('main')->plainTextToken;
 
@@ -55,7 +65,9 @@ class AuthController extends Controller
     {
         $user = Auth::user();
 
-        $user->currentAccessToken()->delete();
+        if ($user) {
+            $user->currentAccessToken()->delete();
+        }
 
         return response()->json();
     }
@@ -63,7 +75,7 @@ class AuthController extends Controller
     public function createTemporaryUser(): JsonResponse
     {
         $user = User::create([
-            'is_temporary' => true
+            'is_temporary' => true,
         ]);
 
         $token = $user->createToken('main')->plainTextToken;

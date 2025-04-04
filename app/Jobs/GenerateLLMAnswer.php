@@ -39,11 +39,14 @@ class GenerateLLMAnswer implements ShouldQueue
      */
     public function handle(): void
     {
-        $aiService = $this->chat->llm->aiService;
-        $userId = $this->chat->user->id;
+        $aiService = $this->chat->llm?->aiService;
+        $userId = $this->chat->user?->id;
+
+        if ($aiService === null || $userId === null) {
+            throw new \Exception(__('errors.missing_connections'));
+        }
 
         $aiManager = new AiManagerService($aiService, $userId);
-
         $aiManager->redirectGenerateAnswer($this->chat);
     }
 }
